@@ -1,6 +1,6 @@
 # xdBot Companion v1.2.5 — Android macro sharing
 
-Independent Geode Android64 add-on targeting **Geometry Dash 2.2081 / Geode 5.10.1**. Install it *alongside* the official xdBot v2.7.7 release. This release uses the new ID `jimmy_1234ha.xdbot-companion` and credits **Jimmy_1234ha**. First remove the former `arena.xdbot-companion` add-on; otherwise both independent copies may show duplicate buttons/prompts. The ID change resets this add-on's settings to defaults, but does not touch your xdBot macros. It does not include, modify, repackage, or redistribute xdBot's binaries, code, images or sounds. Compatibility uses xdBot's `macros_folder` setting and the `LoadMacroLayer` runtime type name in the official Android64 release.
+Independent Geode Android64 add-on targeting **Geometry Dash 2.2081 / Geode 5.10.1**. Install it *alongside* the official xdBot v2.7.7 release. This release uses the new ID `jimmy_1234ha.xdbot-companion` and credits **Jimmy_1234ha**. The ID change resets this add-on's settings to defaults, but does not touch your xdBot macros. It does not include, modify, repackage, or redistribute xdBot's binaries, code, images or sounds. Compatibility uses xdBot's `macros_folder` setting and the `LoadMacroLayer` runtime type name in the official Android64 release.
 
 ## Credits and scope
 
@@ -26,9 +26,7 @@ The picker displays direct files in xdBot's **Macro Save Location**: `.cml`, `.g
 
 **UI integration is best-effort:** it identifies `LoadMacroLayer` by its C++ RTTI name (the method that worked in v1.2.1), then places the smaller separate framed button in the bottom row beside **SELECT ALL**, using an Android v1.2.3 screenshot for placement without scanning or casting xdBot's child nodes. No xdBot asset is copied into the add-on. If xdBot's class hierarchy, RTTI, or layout changes, the pause-menu fallback remains; this is not a change to the xdBot binary. The v1.2.2 crash report identified an unsafe `dynamic_cast` in the attempted search-control scan; v1.2.3 removes that scan entirely. The Android share chooser and corrected UI layout still need testing on a real device. Do not claim a device-verified fix yet.
 
-## Status and review
 
-**Not yet device-verified:** the corrected Android share chooser and the final bottom-row **SHARE MACROS** button placement still need testing on a real phone. Do not treat sharing as fully confirmed until that is done. The source was developed with AI assistance and needs human code review before any Geode Index submission.
 
 ## Build and test
 
