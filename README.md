@@ -1,6 +1,6 @@
 # xdBot Companion v1.2.5 — Android macro sharing
 
-Independent Geode Android64 add-on targeting **Geometry Dash 2.2081 / Geode 5.10.1**. Install it *alongside* the official xdBot v2.7.7 release. This release uses the new ID `jimmy_1234ha.xdbot-companion` and credits **Jimmy_1234ha**. The ID change resets this add-on's settings to defaults, but does not touch your xdBot macros. It does not include, modify, repackage, or redistribute xdBot's binaries, code, images or sounds. Compatibility uses xdBot's `macros_folder` setting and the `LoadMacroLayer` runtime type name in the official Android64 release.
+Independent Geode Android64 add-on targeting **Geometry Dash 2.2081 / Geode 5.10.1**. Install it *alongside* the official xdBot v2.7.7 release. This release uses the new ID `jimmy_1234ha.xdbot-companion` and credits **Jimmy_1234ha**. First remove the former `arena.xdbot-companion` add-on; otherwise both independent copies may show duplicate buttons/prompts. The ID change resets this add-on's settings to defaults, but does not touch your xdBot macros. It does not include, modify, repackage, or redistribute xdBot's binaries, code, images or sounds. Compatibility uses xdBot's `macros_folder` setting and the `LoadMacroLayer` runtime type name in the official Android64 release.
 
 ## Credits and scope
 

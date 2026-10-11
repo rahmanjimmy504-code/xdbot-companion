@@ -1,0 +1,23 @@
+{
+  "geode": "5.10.1",
+  "gd": { "android": "2.2081" },
+  "id": "jimmy_1234ha.xdbot-companion",
+  "name": "xdBot Companion",
+  "version": "v1.2.5",
+  "developer": "Jimmy_1234ha",
+  "description": "Independent Android macro picker with multi-file share sheet, accessible from xdBot's load-macro UI; no xdBot binary included.",
+  "settings": {
+    "share-after-save": {
+      "type": "bool",
+      "name": "Offer to share saved macros",
+      "description": "After a new xdBot macro file finishes saving, ask whether to open Android's share sheet. Nothing is uploaded automatically.",
+      "default": true
+    },
+    "monitor-start": {
+      "type": "bool",
+      "name": "Show minimal monitor at level start",
+      "description": "Display a small FPS, deaths and last-death overlay; can also be toggled in the pause menu.",
+      "default": false
+    }
+  }
+}
