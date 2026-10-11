@@ -1,0 +1,17 @@
+# Generated build output and release archives
+/build/
+/dist/
+/out/
+*.geode
+*.android64.so
+build-log*.txt
+scanner-tests
+
+# Local tools and temporary files
+.cache/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+logo-source.png
