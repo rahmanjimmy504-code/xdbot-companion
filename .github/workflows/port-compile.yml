@@ -1,0 +1,35 @@
+name: Port compile checks (NOT a release)
+
+on:
+  push:
+    branches: [port-preview]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows-preview
+            os: windows-latest
+            target: Win64
+          - name: iOS-preview
+            os: macos-latest
+            target: iOS
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build platform preview
+        uses: geode-sdk/build-geode-mod@main
+        id: build
+        with:
+          sdk: v5.10.1
+          target: ${{ matrix.target }}
+      - name: Upload developer-only build
+        uses: actions/upload-artifact@v4
+        with:
+          name: DEV-DO-NOT-RELEASE-${{ matrix.name }}
+          path: ${{ steps.build.outputs.build-output }}
+          if-no-files-found: error

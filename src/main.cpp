@@ -105,7 +105,12 @@ class ShareWatcher : public cocos2d::CCObject {
         if (!node || depth > 5) return;
         // Attach to m_mainLayer as in v1.2.1. Avoid casting/scanning
         // xdBot's children: Android's mixed RTTI crashed in v1.2.2.
-        if (std::string_view(typeid(*node).name()) == "14LoadMacroLayer") {
+        auto typeName = std::string_view(typeid(*node).name());
+        if (typeName == "14LoadMacroLayer"
+#ifdef GEODE_IS_WINDOWS
+            || typeName.find("LoadMacroLayer") != std::string_view::npos
+#endif
+        ) {
             auto* main = static_cast<FLAlertLayer*>(node)->m_mainLayer;
             if (main && !main->getChildByID("jimmy_1234ha.xdbot-companion/share-entry")) {
                 auto* menu = cocos2d::CCMenu::create();

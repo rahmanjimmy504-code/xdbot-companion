@@ -1,11 +1,11 @@
 {
   "geode": "5.10.1",
-  "gd": { "android": "2.2081" },
+  "gd": { "android": "2.2081", "win": "2.2081", "ios": "2.2081" },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.2.5",
+  "version": "v1.3.0-beta.1",
   "developer": "Jimmy_1234ha",
-  "description": "Independent Android macro picker with multi-file share sheet, accessible from xdBot's load-macro UI; no xdBot binary included.",
+  "description": "Development preview for Android, Windows and iOS macro sharing; Windows backend is not yet functional.",
   "settings": {
     "share-after-save": {
       "type": "bool",

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.0-beta.1 — development source only
+- Extracted shared file validation while retaining the Android JNI backend.
+- Added an **untested iOS UIKit share-sheet prototype** and a Windows fail-closed placeholder. **No functional Windows sharing build exists yet.**
+- Added manual Win64/iOS compile checks and tester templates. Do not release CI artifacts as multiplatform support.
+
+
 ## v1.2.5 — 2026-10-11
 - Added an original folder-and-share-arrow mod icon.
 - Changed the displayed developer to **Jimmy_1234ha** and renamed the mod ID to `jimmy_1234ha.xdbot-companion`.

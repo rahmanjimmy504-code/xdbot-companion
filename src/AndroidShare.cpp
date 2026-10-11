@@ -1,4 +1,4 @@
-#include "AndroidShare.hpp"
+#include "SharePlatform.hpp"
 #include <Geode/cocos/platform/android/jni/JniHelper.h>
 #include <Geode/loader/Dirs.hpp>
 #include <jni.h>
@@ -6,16 +6,8 @@
 
 namespace fs = std::filesystem;
 
-bool shareMacroFiles(std::vector<fs::path> const& files, std::string& error) {
-    error.clear();
-    if (files.empty() || files.size() > 30) { error = "Select between 1 and 30 files."; return false; }
-    for (auto const& f : files) {
-        std::error_code ec;
-        if (fs::is_symlink(f, ec) || ec || !fs::is_regular_file(f, ec) || ec || fs::file_size(f, ec) > 64ull * 1024 * 1024 || ec) {
-            error = "A selected macro is missing, inaccessible, or too large. Reopen the list.";
-            return false;
-        }
-    }
+bool shareMacroFilesPlatform(std::vector<fs::path> const& files, std::string& error) {
+    // Caller has already checked count, regular files, symlinks and size.
     auto* vm = cocos2d::JniHelper::getJavaVM();
     JNIEnv* env = nullptr;
     if (!vm || vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK || !env) {
