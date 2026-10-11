@@ -1,4 +1,4 @@
-name: Port compile checks (NOT a release)
+name: Three-platform compile and combine (NOT a release)
 
 on:
   push:
@@ -11,6 +11,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: Android64-preview
+            os: ubuntu-latest
+            target: Android64
           - name: Windows-preview
             os: windows-latest
             target: Win64
@@ -27,9 +30,55 @@ jobs:
         with:
           sdk: v5.10.1
           target: ${{ matrix.target }}
-      - name: Upload developer-only build
+          combine: true
+      - name: Upload platform build for diagnosis (not a release)
         uses: actions/upload-artifact@v4
         with:
           name: DEV-DO-NOT-RELEASE-${{ matrix.name }}
           path: ${{ steps.build.outputs.build-output }}
+          if-no-files-found: error
+
+  combine:
+    name: Check and assemble three-platform preview
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Merge using the official Geode action
+        uses: geode-sdk/build-geode-mod/combine@main
+        id: merged
+      - name: Verify all three native binaries and name the file
+        shell: bash
+        env:
+          MERGED_DIR: ${{ steps.merged.outputs.build-output }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, shutil, zipfile
+          folder = pathlib.Path(os.environ['MERGED_DIR'])
+          candidates = list(folder.glob('*.geode'))
+          assert len(candidates) == 1, f'Expected one combined .geode: {candidates}'
+          candidate = candidates[0]
+          with zipfile.ZipFile(candidate) as archive:
+              assert archive.testzip() is None, 'Damaged package entry'
+              names = set(archive.namelist())
+              required = {
+                  'jimmy_1234ha.xdbot-companion.android64.so',
+                  'jimmy_1234ha.xdbot-companion.dll',
+                  'jimmy_1234ha.xdbot-companion.ios.dylib',
+                  'mod.json',
+              }
+              assert required <= names, f'Missing platform files: {required - names}'
+              metadata = json.loads(archive.read('mod.json'))
+              assert metadata['id'] == 'jimmy_1234ha.xdbot-companion'
+              assert metadata['version'] == 'v1.3.0-beta.1'
+              assert {'android', 'win', 'ios'} <= set(metadata['gd'])
+          output = pathlib.Path('xdbot-companion.geode')
+          shutil.copyfile(candidate, output)
+          print(f'Combined preview: {output} ({output.stat().st_size} bytes)')
+          PY
+          sha256sum xdbot-companion.geode
+      - name: Upload developer-only single-file candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: DEV-DO-NOT-RELEASE-three-platform-preview
+          path: xdbot-companion.geode
           if-no-files-found: error

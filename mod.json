@@ -1,16 +1,20 @@
 {
   "geode": "5.10.1",
-  "gd": { "android": "2.2081", "win": "2.2081", "ios": "2.2081" },
+  "gd": {
+    "android": "2.2081",
+    "win": "2.2081",
+    "ios": "2.2081"
+  },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
   "version": "v1.3.0-beta.1",
   "developer": "Jimmy_1234ha",
-  "description": "Development preview for Android, Windows and iOS macro sharing; Windows backend is not yet functional.",
+  "description": "Developer preview of opt-in xdBot macro sharing on Android64, Windows and iOS. Windows/iOS transfers remain unverified.",
   "settings": {
     "share-after-save": {
       "type": "bool",
       "name": "Offer to share saved macros",
-      "description": "After a new xdBot macro file finishes saving, ask whether to open Android's share sheet. Nothing is uploaded automatically.",
+      "description": "After a new xdBot macro file finishes saving, ask whether to open the native sharing UI. No file is sent automatically.",
       "default": true
     },
     "monitor-start": {

@@ -8,4 +8,4 @@
 
 No Linux or macOS port is planned. An iOS build uses a Mac as a *tool*, not as a macOS release target.
 
-**Blockers:** Windows native one/two-file transfer testing, iOS device testing, cross-platform xdBot UI/macro-folder verification, end-to-end Android sharing test, and human review after the prior Index rejection. Compiling is only the first gate.
+**Blockers:** same-commit Android64/Windows/iOS combined build, Windows native one/two-file transfer testing, iOS device testing, cross-platform xdBot UI/macro-folder verification, end-to-end Android sharing test, and human review after the prior Index rejection. Compiling is only the first gate.
