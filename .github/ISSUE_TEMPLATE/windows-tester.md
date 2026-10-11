@@ -4,7 +4,7 @@ about: Volunteer now; test only once a functioning Windows build is reviewed and
 labels: testing, windows
 ---
 
-**There is no working Windows sharing build yet. Do not install the Android64 file on Windows.**
+**A Windows CI artifact compiled, but sharing has not been proven and the code needs independent review. Do not install the Android64 release file on Windows. Wait for a reviewed, platform-labelled test artifact.**
 
 - Volunteer / tester role:
 - Windows version (10/11 and build):

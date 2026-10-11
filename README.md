@@ -1,6 +1,6 @@
 # xdBot Companion — Windows/iOS port preview source
 
-> **DEVELOPMENT BRANCH ONLY. Do not publish or distribute the CI artifacts as a finished cross-platform mod.** The only existing tested binary release is the separate v1.2.5 Android64 package. This preview branch has a refactored Android backend, an iOS UIKit prototype that **compiled in GitHub Actions** but has not been tested on a device, and a Windows desktop Share UI candidate that has **not yet been compiled or runtime-tested** since replacing the fail-closed placeholder. The Geode Index previously rejected the AI-generated implementation as "vibecode"; this branch is not a fix for that rejection.
+> **DEVELOPMENT BRANCH ONLY. Do not publish or distribute the CI artifacts as a finished cross-platform mod.** The only existing tested binary release is the separate v1.2.5 Android64 package. This preview branch has a refactored Android backend, an iOS UIKit prototype that **compiled in GitHub Actions** but has not been tested on a device, and a Windows desktop Share UI candidate that **compiled in GitHub Actions** but has not been runtime-tested. The Geode Index previously rejected the AI-generated implementation as "vibecode"; this branch is not a fix for that rejection.
 
 **In-scope targets:** Android64, Windows and iOS. No native Linux or macOS target. The internal ID remains `jimmy_1234ha.xdbot-companion`. This branch declares a development version `v1.3.0-beta.1` so that it cannot be confused with the v1.2.5 release.
 
@@ -9,7 +9,7 @@
 - Extracted common file-count, regular-file, symlink and 64MB checks to `src/ShareMacros.cpp` (host tests in `tests-share.cpp`).
 - Retained the Android JNI backend in `src/AndroidShare.cpp` (Android64 cross-build passed; the OS share flow still needs device verification).
 - Added `src/IOSShare.mm`, a UIKit `UIActivityViewController` prototype that compiled in GitHub Actions but still needs sandbox checks and an iOS tester.
-- Replaced the Windows fail-closed placeholder with a **candidate** `IDataTransferManagerInterop` Share UI backend. It has not passed CI or an on-device transfer test. Do not call it working until both have passed.
+- Replaced the Windows fail-closed placeholder with a **candidate** `IDataTransferManagerInterop` Share UI backend. It compiled in GitHub Actions at commit `33d052f` but has not passed a real transfer test. Do not call it working yet.
 - Added a **manual/branch-push compile workflow** for Win64 and iOS. It uploads developer-only Actions artifacts and never creates a release.
 - Added GitHub issue templates for volunteer/test reports.
 

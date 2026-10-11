@@ -1,12 +1,9 @@
-# What to upload and what happens next
+# Current `port-preview` next steps — no public release
 
-This is a **source-only developer preview**, not a universal `.geode`. The v1.2.5 Android release is unchanged.
+The branch already exists at `rahmanjimmy504-code/xdbot-companion`. The Windows/iOS **previous** source at commit `33d052f` compiled successfully in [Actions run 38154368616](https://github.com/rahmanjimmy504-code/xdbot-companion/actions/runs/38154368616), but no real receiving-app tests have passed. The subsequent wording/docs update also needs its own compile run. The separate v1.2.5 Android64 release must not be overwritten.
 
-1. In `https://github.com/rahmanjimmy504-code/xdbot-companion`, create a **new branch named `port-preview`** from `main`. Do not replace `main` or the v1.2.5 release asset.
-2. Upload the *contents* of this preview folder to `port-preview`, preserving `.github/workflows/port-compile.yml`, `.github/ISSUE_TEMPLATE/`, `src/`, and `mod.json`. Commit as “Start Windows/iOS port preview — NOT FOR RELEASE”. If using Git locally, `git switch -c port-preview`, copy the files, `git add .`, `git commit`, then `git push -u origin port-preview`.
-3. GitHub Actions should run **Port compile checks** automatically on a push to `port-preview` (or manually if enabled). Report the actual Windows/iOS compiler errors; do not label an Actions artifact a tested mod. This action does not merge binaries or create a GitHub Release.
-4. Post the included Windows and iOS tester issue templates to recruit volunteers. **Wait for a reviewed functional build** before giving any artifact to testers. The Windows Share UI candidate has not passed compile or real-file transfer tests.
-5. Have a developer implement and review Windows native file sharing and inspect the iOS UIKit prototype. Require real tests of receiving one and two macro files, cancellation, UI fit and crash-free operation before advertising either platform.
-6. Once both platforms truly pass, create a **new** version and (only then) a combined package named `xdbot-companion.geode`. Never overwrite the existing v1.2.5 release or claim that renaming the Android file adds Windows/iOS.
-
-The existing Geode Index rejection for “vibecode” cannot be bypassed by packaging or platform labels. Human-led code ownership and review are required before any new Index submission.
+1. Upload the supplied source/docs update ZIP to the root of **`port-preview`** as one file. If using an existing Codespace, `git pull --ff-only`, then `unzip -oq <exact-ZIP-name> && rm <exact-ZIP-name> && git add -A && git commit -m "Prepare Windows/iOS review and tests" && git push`. The Codespace cannot see an Arena workspace file until you upload it. Do not redo the extraction or commit after they have succeeded; if only push fails, fix GitHub authorization and push the existing commit.
+2. Confirm that both Windows/iOS jobs pass on the **newest commit**. Do not use a CI artifact from an older commit after a source change.
+3. Post `REVIEW-REQUEST.md` as a GitHub issue (copy the Title and Body sections); ask an independent developer to review the platform code and risks before anyone installs test builds. The Index's “vibecode” rejection is not solved by a green CI run.
+4. Recruit Windows and iOS volunteers with `TESTER-CALL.md` or the platform issue templates. They may volunteer now, but **no installation until a reviewed platform-specific test build is supplied**. After review, use `TEST-PLAN.md` for supervised one/two-file receiving-app and cancellation tests; record the artifact hash and reviewed commit/run.
+5. Only after actual passing device tests and human-led review consider a new version/combined package named `xdbot-companion.geode`. No native Linux/macOS support is planned. Never rename the Android-only binary and imply it is universal.

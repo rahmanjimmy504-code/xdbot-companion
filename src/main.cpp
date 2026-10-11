@@ -148,7 +148,7 @@ public:
         if (name.size() > 38) name = name.substr(0, 35) + "...";
         std::replace_if(name.begin(), name.end(), [](char c) { return c == '<' || c == '>'; }, '_');
         geode::createQuickPopup(
-            "Macro saved", "Share <cy>" + name + "</c> using Android? No upload happens until you choose an app.",
+            "Macro saved", "Share <cy>" + name + "</c> with another app? No file is sent until you choose a target.",
             "Later", "Share now", [saved = *saved](auto*, bool share) {
                 g_promptOpen = false;
                 if (share) shareSelectedMacro(saved);

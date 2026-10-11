@@ -4,7 +4,7 @@ about: Volunteer now; test only once an iOS build is reviewed and posted
 labels: testing, ios
 ---
 
-**The available Android64 package is not an iOS build. Wait for a reviewed iOS test artifact.**
+**An iOS CI artifact compiled, but sharing has not been proven and the code needs independent review. The available Android64 release file is not an iOS build. Wait for a reviewed, platform-labelled test artifact.**
 
 - Volunteer / tester role:
 - iOS and device versions:
