@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0-beta.2 — development source only
+- Add an Android32 build target to the existing four-platform developer preview. The official Geode combine action will produce one `xdbot-companion.geode` containing Android32, Android64, Win64 and iOS binaries if all CI jobs pass. **Android32 has not passed CI or a real device test yet.**
+- No platform is being announced as fully functional based on compilation.
+
 ## v1.3.0-beta.1 — development source only
 - Extracted shared file validation while retaining the Android JNI backend.
 - Added an **untested iOS UIKit share-sheet prototype**; Windows now has an untested desktop Share UI candidate. **No Windows sharing test has passed.**

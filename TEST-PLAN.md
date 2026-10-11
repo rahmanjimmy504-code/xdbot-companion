@@ -14,3 +14,7 @@ Record: platform/OS version, game/Geode/xdBot versions, artifact filename, SHA-2
 6. If a test fails, capture the exact stage/error text, a redacted screenshot or crash log, and steps to reproduce. Never post macros, personal paths, account credentials, or unredacted logs.
 
 **Pass gate:** independent review + successful one/two-file delivery + safe cancellation + stable xdBot UI on **each** platform. Compile success alone is not a pass. Android64's newer chooser fix and button layout also need phone verification before any combined release. No Linux/macOS test or release is planned.
+
+## Android32 addition (beta.2 candidate)
+
+Android32 is a **new, unverified target**. Do not infer support from Android64 or from the presence of an `.android32.so` in a package. Have a tester with a real **32-bit Android device and a working Android32 Geode + xdBot v2.7.7 installation** run the same old/new macro, one-file, two-file, cancellation and no-automatic-upload tests above. Record Android OS, CPU ABI as reported by the device, Geode/xdBot versions, artifact hash and redacted results. Keep the v1.2.5 Android64 release separate. No public four-platform release until all platform tests and code review pass.
