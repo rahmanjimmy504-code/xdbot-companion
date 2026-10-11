@@ -2,7 +2,7 @@
 
 ## v1.3.0-beta.1 — development source only
 - Extracted shared file validation while retaining the Android JNI backend.
-- Added an **untested iOS UIKit share-sheet prototype** and a Windows fail-closed placeholder. **No functional Windows sharing build exists yet.**
+- Added an **untested iOS UIKit share-sheet prototype**; Windows now has an untested desktop Share UI candidate. **No Windows sharing test has passed.**
 - Added manual Win64/iOS compile checks and tester templates. Do not release CI artifacts as multiplatform support.
 
 
