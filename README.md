@@ -26,6 +26,10 @@ The picker displays direct files in xdBot's **Macro Save Location**: `.cml`, `.g
 
 **UI integration is best-effort:** it identifies `LoadMacroLayer` by its C++ RTTI name (the method that worked in v1.2.1), then places the smaller separate framed button in the bottom row beside **SELECT ALL**, using an Android v1.2.3 screenshot for placement without scanning or casting xdBot's child nodes. No xdBot asset is copied into the add-on. If xdBot's class hierarchy, RTTI, or layout changes, the pause-menu fallback remains; this is not a change to the xdBot binary. The v1.2.2 crash report identified an unsafe `dynamic_cast` in the attempted search-control scan; v1.2.3 removes that scan entirely. The Android share chooser and corrected UI layout still need testing on a real device. Do not claim a device-verified fix yet.
 
+## Status and review
+
+**Not yet device-verified:** the corrected Android share chooser and the final bottom-row **SHARE MACROS** button placement still need testing on a real phone. Do not treat sharing as fully confirmed until that is done. The source was developed with AI assistance and needs human code review before any Geode Index submission.
+
 ## Build and test
 
 Source is original companion code only. Build with Geode SDK v5.10.1 and GD 2.2081 bindings, Geode CLI 3.9.0, CMake/Ninja, Android NDK r28c; set `GEODE_SDK`, `GEODE_BINDINGS_REPO_PATH`, `ANDROID_NDK_ROOT`, then run `bash scripts/build-android64.sh`. The Arc/NDK workaround edits only a generated dependency file under the build directory. Run host scanner tests with:
