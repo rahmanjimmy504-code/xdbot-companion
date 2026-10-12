@@ -1,7 +1,9 @@
 #include "MacroPicker.hpp"
 #include "MacroScanner.hpp"
+#include "MacroSearch.hpp"
 #include "AndroidShare.hpp"
 #include <Geode/ui/Popup.hpp>
+#include <Geode/ui/TextInput.hpp>
 #include <algorithm>
 
 using namespace geode::prelude;
@@ -36,6 +38,15 @@ bool MacroPicker::init(fs::path folder) {
     m_status->setScale(.45f);
     m_mainLayer->addChildAtPosition(m_status, Anchor::Bottom, {0.f, 49.f});
     m_status->setZOrder(5);
+    auto* search = geode::TextInput::create(232.f, "Find saved macro...", "chatFont.fnt");
+    if (!search) return false;
+    search->setMaxCharCount(80);
+    search->setCallback([this](std::string const& query) {
+        m_query = macro_search::normalizeQuery(query);
+        m_page = 0;
+        applyFilter();
+    });
+    m_mainLayer->addChildAtPosition(search, Anchor::Top, {0.f, -31.f});
     auto prev = button("PREV", this, menu_selector(MacroPicker::onPrev));
     auto next = button("NEXT", this, menu_selector(MacroPicker::onNext));
     auto all = button("ALL", this, menu_selector(MacroPicker::onAll));
@@ -51,7 +62,7 @@ bool MacroPicker::init(fs::path folder) {
 }
 
 void MacroPicker::reload() {
-    m_files.clear();
+    m_allFiles.clear();
     std::vector<std::pair<fs::file_time_type, fs::path>> candidates;
     std::error_code ec;
     fs::directory_iterator it(m_folder, fs::directory_options::skip_permission_denied, ec);
@@ -72,9 +83,23 @@ void MacroPicker::reload() {
         return a.first != b.first ? a.first > b.first : a.second.string() < b.second.string();
     });
     if (candidates.size() > 1000) candidates.resize(1000);
-    for (auto& candidate : candidates) m_files.push_back(std::move(candidate.second));
+    for (auto& candidate : candidates) m_allFiles.push_back(std::move(candidate.second));
+    applyFilter();
+}
+
+void MacroPicker::applyFilter() {
+    m_files.clear();
+    for (auto const& path : m_allFiles) {
+        if (macro_search::filenameMatches(path.filename().string(), m_query)) m_files.push_back(path);
+    }
     if (m_page * perPage >= m_files.size()) m_page = 0;
     render();
+}
+
+void MacroPicker::updateStatus() {
+    auto pages = std::max<std::size_t>(1, (m_files.size() + perPage - 1) / perPage);
+    m_status->setString(fmt::format("{} of {} found | {} chosen | {}/{}",
+        m_files.size(), m_allFiles.size(), m_selected.size(), m_page + 1, pages).c_str());
 }
 
 void MacroPicker::render() {
@@ -86,11 +111,10 @@ void MacroPicker::render() {
         auto text = std::string(m_selected.contains(m_files[index]) ? "[X] " : "[ ] ") + displayName(m_files[index]);
         auto row = button(text.c_str(), this, menu_selector(MacroPicker::onToggle), .47f);
         row->setTag(static_cast<int>(index));
-        m_buttonMenu->addChildAtPosition(row, Anchor::TopLeft, {18.f, -40.f - 20.f * line}, {0.f, .5f});
+        m_buttonMenu->addChildAtPosition(row, Anchor::TopLeft, {18.f, -62.f - 20.f * line}, {0.f, .5f});
         m_rows.push_back(row);
     }
-    auto pages = std::max<std::size_t>(1, (m_files.size() + perPage - 1) / perPage);
-    m_status->setString(fmt::format("{} saved | {} chosen | page {}/{}", m_files.size(), m_selected.size(), m_page + 1, pages).c_str());
+    updateStatus();
 }
 void MacroPicker::onToggle(cocos2d::CCObject* sender) {
     auto index = static_cast<std::size_t>(static_cast<cocos2d::CCNode*>(sender)->getTag());
@@ -102,8 +126,7 @@ void MacroPicker::onToggle(cocos2d::CCObject* sender) {
     auto* label = static_cast<cocos2d::CCLabelBMFont*>(item->getNormalImage());
     auto text = std::string(m_selected.contains(file) ? "[X] " : "[ ] ") + displayName(file);
     label->setString(text.c_str());
-    auto pages = std::max<std::size_t>(1, (m_files.size() + perPage - 1) / perPage);
-    m_status->setString(fmt::format("{} saved | {} chosen | page {}/{}", m_files.size(), m_selected.size(), m_page + 1, pages).c_str());
+    updateStatus();
 }
 void MacroPicker::onNext(cocos2d::CCObject*) {
     if ((m_page + 1) * perPage < m_files.size()) ++m_page;

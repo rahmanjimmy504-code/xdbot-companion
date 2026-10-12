@@ -7,7 +7,7 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.2",
+  "version": "v1.3.0-beta.3",
   "developer": "Jimmy_1234ha",
   "description": "Developer preview of opt-in xdBot macro sharing on Android32, Android64, Windows and iOS. Runtime sharing remains unverified on new targets.",
   "settings": {

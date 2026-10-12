@@ -18,3 +18,7 @@ Record: platform/OS version, game/Geode/xdBot versions, artifact filename, SHA-2
 ## Android32 addition (beta.2 candidate)
 
 Android32 is a **new, unverified target**. Do not infer support from Android64 or from the presence of an `.android32.so` in a package. Have a tester with a real **32-bit Android device and a working Android32 Geode + xdBot v2.7.7 installation** run the same old/new macro, one-file, two-file, cancellation and no-automatic-upload tests above. Record Android OS, CPU ABI as reported by the device, Geode/xdBot versions, artifact hash and redacted results. Keep the v1.2.5 Android64 release separate. No public four-platform release until all platform tests and code review pass.
+
+## Beta.3 search field checks
+
+Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
