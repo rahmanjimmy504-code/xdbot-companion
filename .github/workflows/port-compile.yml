@@ -1,5 +1,8 @@
 name: Four-platform compile and combine (NOT a release)
 
+# Pin Linux builds during the ubuntu-latest 24.04 -> 26.04 migration.
+# Test on ubuntu-26.04 separately before moving the Android jobs and merger.
+
 on:
   push:
     branches: [port-preview]
@@ -12,10 +15,10 @@ jobs:
       matrix:
         include:
           - name: Android32-preview
-            os: ubuntu-latest
+            os: ubuntu-24.04
             target: Android32
           - name: Android64-preview
-            os: ubuntu-latest
+            os: ubuntu-24.04
             target: Android64
           - name: Windows-preview
             os: windows-latest
@@ -43,7 +46,7 @@ jobs:
 
   combine:
     name: Check and assemble four-platform preview
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build]
     steps:
       - name: Merge using the official Geode action
@@ -86,3 +89,4 @@ jobs:
           name: DEV-DO-NOT-RELEASE-four-platform-preview
           path: xdbot-companion.geode
           if-no-files-found: error
+          
