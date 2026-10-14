@@ -1,6 +1,6 @@
 # xdBot Companion — Android/Windows/iOS port preview source
 
-> **DEVELOPMENT BRANCH ONLY. Do not publish or distribute CI artifacts as a finished cross-platform mod.** The separate v1.2.5 Android64 release remains available. Beta.3 compiled for all four targets, but has not passed device transfer tests. The new beta.4 export code has passed host tests only and has **not** passed four-platform CI or device tests. The Geode Index previously rejected the AI-generated implementation as "vibecode"; this branch is not a fix for that rejection.
+> **DEVELOPMENT BRANCH ONLY. Do not publish or distribute CI artifacts as a finished cross-platform mod.** The separate v1.2.5 Android64 release remains available. Beta.3 compiled for all four targets, but has not passed device transfer tests. The new beta.4 export code has passed host tests only and has **not** passed four-platform CI or device tests. 
 
 **In-scope targets:** Android32, Android64, Windows x64 and iOS arm64. No native Linux or macOS target. The internal ID remains `jimmy_1234ha.xdbot-companion`. This branch declares a development version `v1.3.0-beta.4` so that it cannot be confused with the v1.2.5 release.
 
