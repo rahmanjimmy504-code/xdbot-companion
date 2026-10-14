@@ -28,8 +28,8 @@ void notice(std::string const& title, std::string const& message) {
     g_pickerOpen = false;
     g_delegate = nil;
     if (urls.count > 0) notice("Macro exported", "A copy was saved to your chosen location.");
-    (void)keepAlive;
     else notice("Export unavailable", "The selected destination could not be confirmed.");
+    (void)keepAlive;
 }
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController*)controller {
     CompanionExportDelegate* keepAlive = self;
