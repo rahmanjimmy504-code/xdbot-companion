@@ -76,7 +76,7 @@ jobs:
               assert required <= names, f'Missing platform files: {required - names}'
               metadata = json.loads(archive.read('mod.json'))
               assert metadata['id'] == 'jimmy_1234ha.xdbot-companion'
-              assert metadata['version'] == 'v1.3.0-beta.3'
+              assert metadata['version'] == 'v1.3.0-beta.4'
               assert {'android', 'win', 'ios'} <= set(metadata['gd'])
           output = pathlib.Path('xdbot-companion.geode')
           shutil.copyfile(candidate, output)
@@ -89,4 +89,3 @@ jobs:
           name: DEV-DO-NOT-RELEASE-four-platform-preview
           path: xdbot-companion.geode
           if-no-files-found: error
-          

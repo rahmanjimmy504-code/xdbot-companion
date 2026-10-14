@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0-beta.4 — local export source candidate, not a release
+- Add an EXPORT action for **one selected local macro**. Windows uses Geode's native save picker; iOS uses UIKit's document export picker to avoid Geode 5.10.1's empty-file staging behavior. No export happens until the user taps EXPORT and selects a destination. Both picker flows need CI and device checks.
+- On Android32/64, EXPORT shows an honest unsupported warning and points to the existing SHARE action, where the user may choose a Files app to save the file. Geode's Android SaveFile API drops the SAF content URI, guesses a filesystem path, and even ignores the Downloads directory hint; copying to that path could claim success for the **wrong** file. A safe native Android save integration is still pending.
+- Local `.cml` and `.gdr2` files are eligible for **local export**; Hyperbolus website uploading of these formats remains unsupported. This version does **not** include Hyperbolus login, Hyperbolus account downloads, or in-game website browsing. No website credentials are collected.
+
 ## v1.3.0-beta.3 — search-bar development candidate
 - Add a case-insensitive filename search field to the Share Macros popup. Selected files remain selected when the query changes, and page ALL selects only visible matches. Nothing is sent by searching or selecting.
 - Hyperbolus website login/upload is **not** included: its current public upload form is authenticated, handles one file and requires a level ID; `.cml` and `.gdr2` are rejected. In-game website authentication/upload awaits a site-approved integration and platform review.

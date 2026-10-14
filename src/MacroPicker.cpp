@@ -1,6 +1,7 @@
 #include "MacroPicker.hpp"
 #include "MacroScanner.hpp"
 #include "MacroSearch.hpp"
+#include "MacroExport.hpp"
 #include "AndroidShare.hpp"
 #include <Geode/ui/Popup.hpp>
 #include <Geode/ui/TextInput.hpp>
@@ -51,12 +52,14 @@ bool MacroPicker::init(fs::path folder) {
     auto next = button("NEXT", this, menu_selector(MacroPicker::onNext));
     auto all = button("ALL", this, menu_selector(MacroPicker::onAll));
     auto clear = button("CLEAR", this, menu_selector(MacroPicker::onClear));
+    auto save = button("EXPORT", this, menu_selector(MacroPicker::onExport), .39f);
     auto share = button("SHARE", this, menu_selector(MacroPicker::onShare));
-    m_buttonMenu->addChildAtPosition(prev, Anchor::Bottom, {-138.f, 21.f});
-    m_buttonMenu->addChildAtPosition(next, Anchor::Bottom, {-78.f, 21.f});
-    m_buttonMenu->addChildAtPosition(all, Anchor::Bottom, {-15.f, 21.f});
-    m_buttonMenu->addChildAtPosition(clear, Anchor::Bottom, {48.f, 21.f});
-    m_buttonMenu->addChildAtPosition(share, Anchor::Bottom, {128.f, 21.f});
+    m_buttonMenu->addChildAtPosition(prev, Anchor::Bottom, {-148.f, 21.f});
+    m_buttonMenu->addChildAtPosition(next, Anchor::Bottom, {-92.f, 21.f});
+    m_buttonMenu->addChildAtPosition(all, Anchor::Bottom, {-37.f, 21.f});
+    m_buttonMenu->addChildAtPosition(clear, Anchor::Bottom, {18.f, 21.f});
+    m_buttonMenu->addChildAtPosition(save, Anchor::Bottom, {82.f, 21.f});
+    m_buttonMenu->addChildAtPosition(share, Anchor::Bottom, {145.f, 21.f});
     reload();
     return true;
 }
@@ -143,6 +146,13 @@ void MacroPicker::onAll(cocos2d::CCObject*) {
 }
 void MacroPicker::onClear(cocos2d::CCObject*) {
     m_selected.clear(); render();
+}
+void MacroPicker::onExport(cocos2d::CCObject*) {
+    if (m_selected.size() != 1) {
+        alert("Export one macro", "Choose exactly one macro, then select its save location.");
+        return;
+    }
+    exportMacroFile(*m_selected.begin());
 }
 void MacroPicker::onShare(cocos2d::CCObject*) {
     if (m_selected.empty()) { alert("Nothing selected", "Choose at least one macro to share."); return; }
