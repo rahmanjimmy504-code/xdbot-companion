@@ -1,15 +1,13 @@
 {
   "geode": "5.10.1",
   "gd": {
-    "android": "2.2081",
-    "win": "2.2081",
-    "ios": "2.2081"
+    "android": "2.2081"
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.4",
+  "version": "v1.3.0-beta.5",
   "developer": "Jimmy_1234ha",
-  "description": "Developer preview of opt-in xdBot sharing, with untested Windows/iOS one-file local export. Android export and Hyperbolus integration pending.",
+  "description": "Android-only unreviewed embedded Hyperbolus website candidate. Email/password on Hyperbolus page; manual uploads and SAF downloads require phone tests. Not a four-platform release.",
   "settings": {
     "share-after-save": {
       "type": "bool",
@@ -23,5 +21,10 @@
       "description": "Display a small FPS, deaths and last-death overlay; can also be toggled in the pause menu.",
       "default": false
     }
+  },
+  "resources": {
+    "files": [
+      "resources/hyperbolus-bridge.dex"
+    ]
   }
 }

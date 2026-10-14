@@ -2,10 +2,14 @@
 #include "MacroScanner.hpp"
 #include "MacroSearch.hpp"
 #include "MacroExport.hpp"
+#ifdef GEODE_IS_ANDROID
+#include "HyperbolusAndroid.hpp"
+#endif
 #include "AndroidShare.hpp"
 #include <Geode/ui/Popup.hpp>
 #include <Geode/ui/TextInput.hpp>
 #include <algorithm>
+#include <cctype>
 
 using namespace geode::prelude;
 namespace fs = std::filesystem;
@@ -48,6 +52,10 @@ bool MacroPicker::init(fs::path folder) {
         applyFilter();
     });
     m_mainLayer->addChildAtPosition(search, Anchor::Top, {0.f, -31.f});
+#ifdef GEODE_IS_ANDROID
+    auto hype = button("HYPE", this, menu_selector(MacroPicker::onHyperbolus), .45f);
+    m_buttonMenu->addChildAtPosition(hype, Anchor::Top, {145.f, -31.f});
+#endif
     auto prev = button("PREV", this, menu_selector(MacroPicker::onPrev));
     auto next = button("NEXT", this, menu_selector(MacroPicker::onNext));
     auto all = button("ALL", this, menu_selector(MacroPicker::onAll));
@@ -153,6 +161,27 @@ void MacroPicker::onExport(cocos2d::CCObject*) {
         return;
     }
     exportMacroFile(*m_selected.begin());
+}
+void MacroPicker::onHyperbolus(cocos2d::CCObject*) {
+#ifdef GEODE_IS_ANDROID
+    if (m_selected.size() > 1) {
+        alert("One macro at a time", "Hyperbolus's website accepts one replay per upload. Choose one, or clear selection to browse and download.");
+        return;
+    }
+    std::optional<fs::path> selected;
+    if (!m_selected.empty()) {
+        selected = *m_selected.begin();
+        auto extension = selected->extension().string();
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+            [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+        if (extension != ".gdr" && extension != ".json") {
+            alert("Unsupported website format", "Hyperbolus accepts .gdr or .json. .cml and .gdr2 cannot be uploaded there. No file was sent.");
+            return;
+        }
+    }
+    std::string error;
+    if (!openHyperbolusAndroid(selected, error)) alert("Hyperbolus unavailable", error);
+#endif
 }
 void MacroPicker::onShare(cocos2d::CCObject*) {
     if (m_selected.empty()) { alert("Nothing selected", "Choose at least one macro to share."); return; }

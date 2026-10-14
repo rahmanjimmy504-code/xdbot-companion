@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.0-beta.5 — Android-only Hyperbolus native WebView source candidate, unverified
+- Add an Android WebView dialog **inside Geometry Dash** for Hyperbolus's own email/password page and website navigation; no mod-owned password field or external Custom Tab.
+- From the macro popup, HYPE with one supported local `.gdr`/`.gdr.json` offers that file to the site's upload form after a per-attachment confirmation. `.cml` and `.gdr2` are explicitly rejected for the website; nothing uploads until the user submits Hyperbolus's own form. No preselection permits one supported file via Android's document picker.
+- Browser download links offer Android's SAF create-document picker, stream bytes into the chosen URI, and do not send account cookies to redirected storage. Browser/chooser/download behavior is **untested on a phone** and may fail; CI compile success would not certify it.
+- Android64 is the first development target. Android32, Windows and iOS native Hyperbolus browser ports remain to be built; this is not a combined package or release.
+
 ## v1.3.0-beta.4 — local export source candidate, not a release
 - Add an EXPORT action for **one selected local macro**. Windows uses Geode's native save picker; iOS uses UIKit's document export picker to avoid Geode 5.10.1's empty-file staging behavior. No export happens until the user taps EXPORT and selects a destination. Both picker flows need CI and device checks.
 - On Android32/64, EXPORT shows an honest unsupported warning and points to the existing SHARE action, where the user may choose a Files app to save the file. Geode's Android SaveFile API drops the SAF content URI, guesses a filesystem path, and even ignores the Downloads directory hint; copying to that path could claim success for the **wrong** file. A safe native Android save integration is still pending.

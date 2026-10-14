@@ -1,0 +1,56 @@
+name: Android64 Hyperbolus native WebView (DEVELOPER TEST ONLY)
+
+on:
+  push:
+    branches: [hyperbolus-android]
+  workflow_dispatch:
+
+jobs:
+  android64:
+    name: Build Android64 native in-game browser candidate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test allowed website and macro-format policy
+        shell: bash
+        run: |
+          mkdir -p /tmp/hyperbolus-rules-test
+          javac -d /tmp/hyperbolus-rules-test \
+            android/java/com/jimmy1234ha/xdbot/HyperbolusRules.java \
+            android/tests/HyperbolusRulesTest.java
+          java -cp /tmp/hyperbolus-rules-test HyperbolusRulesTest
+      - name: Compile Android WebView class into app-private dex resource
+        shell: bash
+        run: bash scripts/build-hyperbolus-bridge.sh
+      - name: Build Android64 Geode package
+        id: build
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: v5.10.1
+          target: Android64
+      - name: Verify candidate metadata and native/browser entries
+        shell: bash
+        env:
+          OUTPUT: ${{ steps.build.outputs.build-output }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, zipfile
+          root = pathlib.Path(os.environ['OUTPUT'])
+          packages = list(root.rglob('*.geode')) if root.is_dir() else [root]
+          assert len(packages) == 1, f'Expected one Android .geode in {root}, got {packages}'
+          with zipfile.ZipFile(packages[0]) as archive:
+              assert archive.testzip() is None
+              names = archive.namelist()
+              meta = json.loads(archive.read('mod.json'))
+              assert meta['id'] == 'jimmy_1234ha.xdbot-companion'
+              assert meta['version'] == 'v1.3.0-beta.5'
+              assert any(name.endswith('android64.so') for name in names), names
+              assert any(name.endswith('hyperbolus-bridge.dex') for name in names), names
+              print('Android64 native binary and Java WebView dex are packaged; runtime not tested.')
+          PY
+      - name: Upload Android-only candidate — do not release
+        uses: actions/upload-artifact@v4
+        with:
+          name: DEV-HYPERBOLUS-ANDROID64-UNREVIEWED
+          path: ${{ steps.build.outputs.build-output }}
+          if-no-files-found: error
