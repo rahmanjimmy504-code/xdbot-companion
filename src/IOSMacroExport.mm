@@ -16,7 +16,7 @@ bool g_pickerOpen = false;
 
 void notice(std::string const& title, std::string const& message) {
     geode::queueInMainThread([title, message] {
-        geode::createQuickPopup(title, message, "OK", nullptr, [](auto*, bool) {});
+        geode::createQuickPopup(title.c_str(), message, "OK", nullptr, [](auto*, bool) {});
     });
 }
 }

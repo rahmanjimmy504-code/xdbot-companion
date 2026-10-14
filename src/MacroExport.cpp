@@ -11,7 +11,7 @@ namespace file = geode::utils::file;
 
 namespace {
 void notice(std::string const& title, std::string const& text) {
-    geode::createQuickPopup(title, text, "OK", nullptr, [](auto*, bool) {});
+    geode::createQuickPopup(title.c_str(), text, "OK", nullptr, [](auto*, bool) {});
 }
 }
 
