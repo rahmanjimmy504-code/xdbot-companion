@@ -43,14 +43,18 @@ jobs:
               names = archive.namelist()
               meta = json.loads(archive.read('mod.json'))
               assert meta['id'] == 'jimmy_1234ha.xdbot-companion'
-              assert meta['version'] == 'v1.3.0-beta.5'
+              assert meta['version'] == 'v1.3.0-beta.6'
               assert any(name.endswith('android64.so') for name in names), names
-              assert any(name.endswith('hyperbolus-bridge.dex') for name in names), names
-              print('Android64 native binary and Java WebView dex are packaged; runtime not tested.')
+              dex_paths = [name for name in names if name.endswith('hyperbolus-bridge.dex')]
+              assert len(dex_paths) == 1, names
+              dex = archive.read(dex_paths[0])
+              assert dex.startswith(b'dex\\n') and b'DocumentFragment' in dex
+              assert b'androidx/activity/result' not in dex
+              print('Android64 native binary and framework-Fragment bridge dex packaged; runtime not tested.')
           PY
       - name: Upload Android-only candidate — do not release
         uses: actions/upload-artifact@v4
         with:
-          name: DEV-HYPERBOLUS-ANDROID64-UNREVIEWED
+          name: DEV-HYPERBOLUS-ANDROID64-beta.6-UNREVIEWED
           path: ${{ steps.build.outputs.build-output }}
           if-no-files-found: error

@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -15,7 +16,7 @@ jclass s_bridge = nullptr; // Global JNI reference: keep the dynamically loaded 
 jobject s_classLoader = nullptr;
 }
 
-bool openHyperbolusAndroid(std::optional<fs::path> selected, std::string& error) {
+static bool invokeAndroidDocumentBridge(std::optional<fs::path> selected, char const* method, std::string& error) {
     if (selected && !validateMacroForExport(*selected, error)) return false;
     auto resourceDex = geode::Mod::get()->getResourcesDir() / "hyperbolus-bridge.dex";
     std::error_code ec;
@@ -24,7 +25,7 @@ bool openHyperbolusAndroid(std::optional<fs::path> selected, std::string& error)
         return false;
     }
     auto saveDir = geode::Mod::get()->getSaveDir();
-    auto dex = saveDir / "hyperbolus-bridge-v1.3.0-beta.5.dex";
+    auto dex = saveDir / "hyperbolus-bridge-v1.3.0-beta.6.dex";
     if (!s_bridge) {
         fs::create_directories(saveDir, ec);
         if (!ec) fs::remove(dex, ec);
@@ -142,17 +143,25 @@ bool openHyperbolusAndroid(std::optional<fs::path> selected, std::string& error)
             s_classLoader = env->NewGlobalRef(loaded);
             if (!s_bridge || !s_classLoader) break;
         }
-        stage = "show native in-game browser";
-        auto open = env->GetStaticMethodID(s_bridge, "open",
+        stage = "invoke native document UI";
+        auto call = env->GetStaticMethodID(s_bridge, method,
             "(Landroid/app/Activity;Landroid/net/Uri;Ljava/lang/String;)V");
-        if (!open) break;
+        if (!call) break;
         auto name = str(selected ? selected->filename().string() : "");
-        env->CallStaticVoidMethod(s_bridge, open, activity, macroUri, name);
+        env->CallStaticVoidMethod(s_bridge, call, activity, macroUri, name);
         if (env->ExceptionCheck()) break;
         success = true;
     } while (false);
     clear();
     for (auto it = locals.rbegin(); it != locals.rend(); ++it) env->DeleteLocalRef(*it);
-    if (!success) error = "Android Hyperbolus browser could not start (stage: " + stage + ").";
+    if (!success) error = "Android document bridge could not start (stage: " + stage + ").";
     return success;
+}
+
+bool openHyperbolusAndroid(std::optional<fs::path> selected, std::string& error) {
+    return invokeAndroidDocumentBridge(std::move(selected), "open", error);
+}
+
+bool exportMacroAndroid(fs::path const& source, std::string& error) {
+    return invokeAndroidDocumentBridge(source, "export", error);
 }

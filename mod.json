@@ -5,9 +5,9 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.5",
+  "version": "v1.3.0-beta.6",
   "developer": "Jimmy_1234ha",
-  "description": "Android-only unreviewed embedded Hyperbolus website candidate. Email/password on Hyperbolus page; manual uploads and SAF downloads require phone tests. Not a four-platform release.",
+  "description": "Android64 developer candidate: in-game Hyperbolus WebView with URI-based Android file pickers and local export. Phone tests required; other platforms pending.",
   "settings": {
     "share-after-save": {
       "type": "bool",

@@ -1,4 +1,7 @@
 #include "MacroExport.hpp"
+#ifdef GEODE_IS_ANDROID
+#include "HyperbolusAndroid.hpp"
+#endif
 #include <Geode/Geode.hpp>
 #include <Geode/utils/file.hpp>
 #include <Geode/utils/async.hpp>
@@ -22,14 +25,9 @@ void exportMacroFile(fs::path const& source) {
         return;
     }
 #ifdef GEODE_IS_ANDROID
-    // The stock Geode Android SaveFile API discards the SAF content URI and
-    // returns a guessed filesystem path. That path may be unwritable or even
-    // point at a different Downloads file. Never call an unverified copy a
-    // successful save. The existing SHARE action lets a Files app receive the
-    // original bytes using a content URI; the user chooses the receiving app.
-    notice("Android export unavailable",
-        "This launcher's save picker cannot safely write the selected location. Use SHARE and choose a Files app to save your macro.");
-    return;
+    // Use our own ACTION_CREATE_DOCUMENT framework Fragment result receiver.
+    // The launcher drops the SAF URI; copying to its guessed path is unsafe.
+    if (!exportMacroAndroid(source, error)) notice("Export unavailable", error);
 #else
     file::FilePickOptions options;
     options.defaultPath = source.filename();

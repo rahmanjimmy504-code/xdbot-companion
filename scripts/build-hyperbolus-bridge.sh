@@ -10,6 +10,8 @@ test -f "$platform/android.jar"
 test -x "$build_tools/d8"
 command -v javac >/dev/null
 work="$root/.java-build"
+# Never package a stale inner class left by a previous implementation.
+rm -rf "$work/classes" "$work/dex"
 mkdir -p "$work/classes" "$work/dex" "$root/resources"
 javac -encoding UTF-8 --release 8 -classpath "$platform/android.jar" -d "$work/classes" \
   "$root/android/java/com/jimmy1234ha/xdbot/HyperbolusRules.java" \

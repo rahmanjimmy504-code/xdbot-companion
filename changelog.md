@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0-beta.6 — Android document URI fix, development candidate
+- Fix HYPE's pre-browser picker setup failure seen on a phone: remove reflection over launcher-specific contract names. A companion-owned Android framework Fragment starts the Android document UI and receives actual SAF content URIs for website file choice and account downloads; do not use Geode's guessed filesystem path. Unlike AndroidX classes in the released Geode launcher, Android SDK framework class names cannot be obfuscated by the launcher.
+- Enable Android EXPORT for one selected local macro through ACTION_CREATE_DOCUMENT and ContentResolver streams. This handles .gdr, .gdr.json, .cml and .gdr2 locally; .cml/.gdr2 remain unsupported for Hyperbolus uploads.
+- No new third-party Java dependencies. Clean Java builds discard stale class files. Java/D8 compilation passed; CI and device testing of beta.6 remain pending.
+
 ## v1.3.0-beta.5 — Android-only Hyperbolus native WebView source candidate, unverified
 - Add an Android WebView dialog **inside Geometry Dash** for Hyperbolus's own email/password page and website navigation; no mod-owned password field or external Custom Tab.
 - From the macro popup, HYPE with one supported local `.gdr`/`.gdr.json` offers that file to the site's upload form after a per-attachment confirmation. `.cml` and `.gdr2` are explicitly rejected for the website; nothing uploads until the user submits Hyperbolus's own form. No preselection permits one supported file via Android's document picker.

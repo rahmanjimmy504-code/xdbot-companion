@@ -2,7 +2,7 @@ package com.jimmy1234ha.xdbot;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -24,12 +24,10 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -41,8 +39,11 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     private final String selectedName;
     private WebView web;
     private AlertDialog dialog;
-    private Object fileLauncher;
-    private Object saveLauncher;
+    private static Uri pendingExportSource;
+    private static final int PICK_UPLOAD = 501;
+    private static final int PICK_DOWNLOAD = 502;
+    private static final int PICK_EXPORT = 503;
+    private static final String DOCUMENT_TAG = "xdbot-companion-documents";
     private ValueCallback<Uri[]> fileCallback;
     private String pendingDownload;
     private String pendingUserAgent;
@@ -60,13 +61,61 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
                 return;
             }
             HyperbolusBridge bridge = new HyperbolusBridge(activity, macro, name);
-            if (!bridge.registerPickers()) {
-                Toast.makeText(activity, "This Geode launcher cannot open the secure file pickers.", Toast.LENGTH_LONG).show();
+            // Do not depend on any picker setup just to open the website.
+            active = bridge;
+            try { bridge.show(); }
+            catch (RuntimeException e) {
+                active = null;
+                Toast.makeText(activity, "Website window failed: " + e.getClass().getSimpleName(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /** Save a local xdBot macro to the URI the user chose, without a WebView. */
+    public static void export(Activity activity, Uri macro, String filename) {
+        activity.runOnUiThread(() -> {
+            if (macro == null) {
+                Toast.makeText(activity, "Could not read the selected macro.", Toast.LENGTH_LONG).show();
                 return;
             }
-            active = bridge;
-            bridge.show();
+            if (pendingExportSource != null) {
+                Toast.makeText(activity, "Finish the current export first.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            try {
+                DocumentFragment receiver = documents(activity);
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("application/octet-stream")
+                    .putExtra(Intent.EXTRA_TITLE, HyperbolusRules.cleanFilename(filename))
+                    .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                pendingExportSource = macro;
+                receiver.startActivityForResult(intent, PICK_EXPORT);
+            } catch (RuntimeException e) {
+                pendingExportSource = null;
+                Toast.makeText(activity, "Export picker failed: " + e.getClass().getSimpleName(), Toast.LENGTH_LONG).show();
+            }
         });
+    }
+    private static void copyLocal(Activity activity, Uri source, Uri output) {
+        try (InputStream in = activity.getContentResolver().openInputStream(source);
+             OutputStream out = activity.getContentResolver().openOutputStream(output, "wt")) {
+            if (in == null || out == null) throw new Exception("Selected file cannot be opened");
+            long total = 0;
+            byte[] buffer = new byte[32768];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                total += n;
+                if (total > 64L * 1024 * 1024) throw new Exception("Macro exceeds 64 MB");
+                out.write(buffer, 0, n);
+            }
+            out.flush();
+            if (total == 0) throw new Exception("The macro was empty");
+            activity.runOnUiThread(() -> Toast.makeText(activity, "Macro exported to chosen location.", Toast.LENGTH_LONG).show());
+        } catch (Exception e) {
+            try { activity.getContentResolver().delete(output, null, null); } catch (Exception ignored) { }
+            activity.runOnUiThread(() -> Toast.makeText(activity, "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        }
     }
 
     private static boolean site(Uri uri) {
@@ -74,66 +123,64 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     }
     private void toast(String message) { Toast.makeText(activity, message, Toast.LENGTH_LONG).show(); }
 
-    // The Geode Android launcher is an AppCompatActivity. Use its ActivityResultRegistry
-    // via reflection so this dex needs only android.jar at compilation, not an AndroidX
-    // AAR copied from a possibly different launcher version.
-    private Object register(String key, String contractClassName, Class<?>[] ctorTypes, Object[] ctorArgs,
-                            InvocationHandler callback) throws Exception {
-        ClassLoader loader = activity.getClassLoader();
-        Class<?> contractClass = Class.forName(contractClassName, true, loader);
-        Object contract = contractClass.getConstructor(ctorTypes).newInstance(ctorArgs);
-        Class<?> callbackClass = Class.forName("androidx.activity.result.ActivityResultCallback", true, loader);
-        Object proxy = Proxy.newProxyInstance(loader, new Class<?>[]{callbackClass}, callback);
-        Object registry = activity.getClass().getMethod("getActivityResultRegistry").invoke(activity);
-        Class<?> baseContract = Class.forName("androidx.activity.result.contract.ActivityResultContract", true, loader);
-        return registry.getClass().getMethod("register", String.class, baseContract, callbackClass)
-            .invoke(registry, key, contract, proxy);
-    }
-    private boolean registerPickers() {
-        try {
-            String suffix = "xdbot-companion-hyperbolus";
-            // These two contracts are already used by Geode's launcher, so
-            // Android's shrinker cannot remove them as unused classes.
-            fileLauncher = register(suffix + "-open", "com.geode.launcher.activityresult.GeodeOpenFileActivityResult",
-                new Class<?>[0], new Object[0], (proxy, method, args) -> {
-                    if (method.getName().equals("onActivityResult")) uploadPicked(args != null ? (Uri) args[0] : null);
-                    return null;
-                });
-            saveLauncher = register(suffix + "-save", "com.geode.launcher.activityresult.GeodeSaveFileActivityResult",
-                new Class<?>[0], new Object[0], (proxy, method, args) -> {
-                    if (method.getName().equals("onActivityResult")) downloadPicked(args != null ? (Uri) args[0] : null);
-                    return null;
-                });
-            return true;
-        } catch (Exception e) {
-            unregister(fileLauncher); unregister(saveLauncher);
-            fileLauncher = null; saveLauncher = null;
-            return false;
+    // Framework Fragment is used deliberately: the released Geode launcher
+    // minifies AndroidX result classes and private Geode picker contracts. This
+    // Android SDK API cannot be renamed by the launcher's R8 configuration.
+    public static final class DocumentFragment extends Fragment {
+        public DocumentFragment() { }
+        @Override public void onActivityResult(int request, int resultCode, Intent data) {
+            super.onActivityResult(request, resultCode, data);
+            Uri uri = resultCode == Activity.RESULT_OK && data != null ? data.getData() : null;
+            if (request == PICK_UPLOAD && active != null) active.uploadPicked(uri);
+            else if (request == PICK_DOWNLOAD && active != null) active.downloadPicked(uri);
+            else if (request == PICK_EXPORT) {
+                Uri source = pendingExportSource;
+                pendingExportSource = null;
+                Activity current = getActivity();
+                if (source != null && uri != null && current != null)
+                    new Thread(() -> copyLocal(current, source, uri), "xdBot macro export").start();
+            }
+            // Do not leave an unnecessary dynamic-dex fragment in the host
+            // activity's saved state after a completed picker operation.
+            if (getFragmentManager() != null)
+                getFragmentManager().beginTransaction().remove(this).commitAllowingStateLoss();
         }
     }
-    private Object openParams() throws Exception {
-        Class<?> cls = Class.forName("com.geode.launcher.activityresult.GeodeOpenFileActivityResult$OpenFileParams",
-            true, activity.getClassLoader());
-        return cls.getConstructor(String[].class, Uri.class).newInstance((Object)new String[]{"*/*"}, null);
+    private static DocumentFragment documents(Activity activity) {
+        FragmentManager manager = activity.getFragmentManager();
+        Fragment existing = manager.findFragmentByTag(DOCUMENT_TAG);
+        if (existing instanceof DocumentFragment) return (DocumentFragment)existing;
+        if (existing != null) throw new IllegalStateException("Picker tag is already used");
+        DocumentFragment receiver = new DocumentFragment();
+        receiver.setRetainInstance(true); // Keep outstanding results across configuration changes.
+        manager.beginTransaction().add(receiver, DOCUMENT_TAG).commit();
+        manager.executePendingTransactions();
+        return receiver;
     }
-    private Object saveParams(String name) throws Exception {
-        Class<?> cls = Class.forName("com.geode.launcher.activityresult.GeodeSaveFileActivityResult$SaveFileParams",
-            true, activity.getClassLoader());
-        return cls.getConstructor(String.class, File.class).newInstance("application/octet-stream", new File(name));
-    }
-    private void launch(Object launcher, Object input) {
+    private void launchOpen() {
         try {
-            Class<?> clazz = Class.forName("androidx.activity.result.ActivityResultLauncher", true, activity.getClassLoader());
-            clazz.getMethod("launch", Object.class).invoke(launcher, input);
-        } catch (Exception e) {
-            toast("Could not open the Android document picker.");
-            if (launcher == fileLauncher) uploadPicked(null);
-            else { pendingDownload = null; pendingUserAgent = null; }
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("*/*")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            documents(activity).startActivityForResult(intent, PICK_UPLOAD);
+        } catch (RuntimeException e) {
+            toast("Could not open the Android file picker.");
+            uploadPicked(null);
         }
     }
-    private void unregister(Object launcher) {
-        if (launcher == null) return;
-        try { launcher.getClass().getMethod("unregister").invoke(launcher); } catch (Exception ignored) { }
+    private void launchSave(String name) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("application/octet-stream")
+                .putExtra(Intent.EXTRA_TITLE, name)
+                .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            documents(activity).startActivityForResult(intent, PICK_DOWNLOAD);
+        } catch (RuntimeException e) {
+            pendingDownload = null; pendingUserAgent = null;
+            toast("Could not open the Android save picker.");
+        }
     }
 
     private void show() {
@@ -202,7 +249,6 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     }
     private void close() {
         if (fileCallback != null) { fileCallback.onReceiveValue(null); fileCallback = null; }
-        unregister(fileLauncher); unregister(saveLauncher);
         if (web != null) { web.stopLoading(); web.destroy(); web = null; }
         dialog = null;
         active = null;
@@ -248,8 +294,7 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
                 .setNegativeButton("CANCEL", (d, which) -> uploadPicked(null))
                 .setOnCancelListener(d -> uploadPicked(null)).show();
         } else {
-            try { launch(fileLauncher, openParams()); }
-            catch (Exception e) { toast("Launcher file picker is unavailable."); uploadPicked(null); }
+            launchOpen();
         }
         return true;
     }
@@ -266,11 +311,7 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
         }
         pendingDownload = url;
         pendingUserAgent = userAgent;
-        try { launch(saveLauncher, saveParams(name)); }
-        catch (Exception e) {
-            pendingDownload = null; pendingUserAgent = null;
-            toast("Launcher save picker is unavailable.");
-        }
+        launchSave(name);
     }
     private void downloadPicked(Uri output) {
         String url = pendingDownload;
@@ -306,7 +347,7 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
                 if (connection.getContentLengthLong() > 64L * 1024 * 1024) throw new Exception("Macro exceeds 64 MB");
                 long total = 0;
                 try (InputStream in = connection.getInputStream();
-                     OutputStream out = activity.getContentResolver().openOutputStream(output, "w")) {
+                     OutputStream out = activity.getContentResolver().openOutputStream(output, "wt")) {
                     if (out == null) throw new Exception("Chosen destination is unavailable");
                     byte[] data = new byte[32768];
                     int n;

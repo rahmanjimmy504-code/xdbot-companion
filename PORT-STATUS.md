@@ -2,7 +2,7 @@
 
 | Platform | Hyperbolus browser | User-tested? |
 |---|---|---|
-| Android64 | Native Android WebView Dialog source and dex built locally; native Geode CI pending | No |
+| Android64 | Beta.5 CI passed but failed phone picker test. Beta.6 URI-based picker/export source and dex built locally; beta.6 CI pending | Beta.5 failure; beta.6 not tested |
 | Android32 | Same Android source expected to compile later; no separate build | No |
 | Windows x64 | Embedded WebView2 backend not implemented | No |
 | iOS arm64 | Embedded WKWebView backend not implemented | No |
