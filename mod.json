@@ -5,9 +5,9 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.12",
+  "version": "v1.3.0-beta.13",
   "developer": "Jimmy_1234ha",
-  "description": "Android64 beta.12 source candidate: larger, simple, unframed game-style icons with spaced action buttons and macro rows; wide GDBrowser view; device tests required.",
+  "description": "Android64 beta.13 source candidate: 14 separately generated colourful rhythm-game icon sprites; larger companion buttons and macro rows; GDBrowser and Hyperbolus views; device tests required.",
   "settings": {
     "share-after-save": {
       "type": "bool",

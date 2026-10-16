@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0-beta.13 — individually generated arcade-game icon sprites (Android64 source only)
+- Generate **14 distinct original image assets**, one for each HYPE, GDB, PREV, NEXT, ALL, CLEAR, EXPORT, SHARE, GDR, JSON, CML, GDR2, selected and unselected icon. The artwork has bold saturated colours, heavy black outlines and geometric highlights inspired by Geometry Dash menu styling, without copying an existing game sprite. Store full-size originals in `art/source-icons/`; crop their white generator backgrounds into separate transparent 96px RGBA PNG sprites in `resources/icons/`. No vector placeholders or image-edit-derived icons are substituted.
+- Enlarge native action, website and macro-row sprites versus beta.12. Expand the popup from 360×260 to 360×288 game units, space row icons and labels farther apart, and show five rows per page to accommodate larger art without vertical collision. This modifies C++ and **requires a new native Android64 CI build**; beta.12 cannot be relabelled or repacked as beta.13.
+- Keep the wide GDB WebView and explicit Hyperbolus upload/SAF save behavior. Java/D8 and local policy tests may pass, but native compilation, on-device icon layout, GDB navigation and Hyperbolus account upload/download remain unverified for beta.13. Do not release or claim Android32/Windows/iOS website support.
+
 ## v1.3.0-beta.12 — large, simple game-style icons (Android64 source only)
 - Follow-up phone feedback: beta.11's framed generated pictures are too small and do not read as icons. Replace them with 14 bold, uncluttered pictograms on transparent PNGs—no common square picture tile. Keep high-contrast gold, blue, green and red with dark outlines; use a larger 64px source canvas.
 - Increase the **native** action-icon scale and list selection/file-format icon scales. Space the selection and file images apart, shift row labels right, change row spacing to 24px and show six macros per page instead of seven. Move status away from the button row. Changes to native UI require a **new Android64 C++ CI build**: do not repack beta.9's old native library or claim a working installable beta.12 yet.

@@ -16,7 +16,7 @@ class MacroPicker : public geode::Popup {
     cocos2d::CCLabelBMFont* m_status = nullptr;
     std::string m_query;
     std::size_t m_page = 0;
-    static constexpr std::size_t perPage = 6; // Larger row icons need 24px line spacing.
+    static constexpr std::size_t perPage = 5; // Large generated icon sprites need 36px line spacing.
     bool init(std::filesystem::path folder);
     void reload();
     void applyFilter();

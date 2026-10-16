@@ -23,6 +23,12 @@ Android32 is a **new, unverified target**. Do not infer support from Android64 o
 
 Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
 
+## Beta.13 Android64 generated icon + larger panel check (after new native CI build only)
+
+1. Inspect the actual beta.13 `.geode`: mod version beta.13, newly built Android64 ELF, the WebView DEX, and **14 distinct 96px transparent PNG resources** under `icons/`. Never install the source ZIP or relabel an older native library.
+2. Replace beta.12 in Geode. Open the companion popup and confirm the five-row panel fits on the landscape tablet, has visibly larger **generated sprite** art on HYPE/GDB, action buttons, file-type rows and selection state, and has no clipped controls or overlapping labels. Try select/deselect, NEXT/PREV, ALL/CLEAR and filename search. If the enlarged popup crowds the screen, capture a redacted screenshot; CI cannot verify geometry on-device.
+3. Open GDB with no selected macro; see if the wider WebView now shows the website instead of the blue **Yikes** warning. Test website switch to HYPE and back, keyboard input, and local EXPORT with a disposable macro. Do not submit private credentials/macros or falsely claim account download/upload works. Report precise errors and redacted screenshot.
+
 ## Beta.12 Android64 larger icon retest (only after a NEW native CI build)
 
 1. Inspect the actual beta.12 package, confirm 14 transparent 64px icon resources and a newly built Android64 native library (not the reused beta.9 ELF). Replace older companion versions before installing. Do not treat this source ZIP as an installable package.

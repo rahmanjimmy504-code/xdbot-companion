@@ -31,7 +31,7 @@ CCMenuItemSpriteExtra* button(char const* title, cocos2d::CCObject* owner,
     auto* label = cocos2d::CCLabelBMFont::create(title, "goldFont.fnt");
     label->setScale(scale);
     if (!symbol) return CCMenuItemSpriteExtra::create(label, owner, action);
-    auto* image = icon(symbol, above ? .42f : .34f); // 64px pictograms, not tiny tiles
+    auto* image = icon(symbol, above ? .36f : .30f); // 96px generated sprites, ~35/29 game units
     if (!image) return CCMenuItemSpriteExtra::create(label, owner, action);
     float lw = label->getContentSize().width * scale;
     float lh = label->getContentSize().height * scale;
@@ -58,8 +58,8 @@ void alert(char const* title, std::string text) {
 std::string displayName(fs::path const& p) {
     auto name = p.filename().string();
     std::replace_if(name.begin(), name.end(), [](char ch) { return ch == '<' || ch == '>'; }, '_');
-    if (name.size() > 30) {
-        std::size_t cut = 27;
+    if (name.size() > 25) {
+        std::size_t cut = 22;
         while (cut && (static_cast<unsigned char>(name[cut]) & 0xc0) == 0x80) --cut;
         name.resize(cut);
         name += "...";
@@ -79,38 +79,38 @@ CCMenuItemSpriteExtra* rowButton(fs::path const& path, bool selected,
     cocos2d::CCObject* owner, cocos2d::SEL_MenuHandler action) {
     auto* body = cocos2d::CCNode::create();
     body->ignoreAnchorPointForPosition(false);
-    body->setContentSize({314.f, 25.f});
-    auto* selectedIcon = icon(selected ? "selected" : "unselected", .39f);
+    body->setContentSize({314.f, 35.f});
+    auto* selectedIcon = icon(selected ? "selected" : "unselected", .35f);
     if (selectedIcon) {
-        selectedIcon->setPosition({14.f, 12.5f});
+        selectedIcon->setPosition({18.f, 17.5f});
         selectedIcon->setTag(kSelectionIconTag);
         body->addChild(selectedIcon);
     }
-    auto* fileIcon = icon(formatIcon(path), .39f);
-    if (fileIcon) { fileIcon->setPosition({43.f, 12.5f}); body->addChild(fileIcon); }
+    auto* fileIcon = icon(formatIcon(path), .35f);
+    if (fileIcon) { fileIcon->setPosition({55.f, 17.5f}); body->addChild(fileIcon); }
     auto* label = cocos2d::CCLabelBMFont::create(displayName(path).c_str(), "goldFont.fnt");
-    label->setScale(.43f);
+    label->setScale(.42f);
     label->setAnchorPoint({0.f, .5f});
-    label->setPosition({65.f, 12.5f});
+    label->setPosition({78.f, 17.5f});
     body->addChild(label);
     return CCMenuItemSpriteExtra::create(body, owner, action);
 }
 } // namespace
 
 bool MacroPicker::init(fs::path folder) {
-    if (!Popup::init(360.f, 260.f, "GJ_square01.png")) return false;
+    if (!Popup::init(360.f, 288.f, "GJ_square01.png")) return false;
     m_folder = std::move(folder);
     // A simple new panel echoing xdBot's documented default menu colour.
-    auto bg = cocos2d::CCLayerColor::create(cocos2d::ccc4(51, 68, 153, 236), 348.f, 248.f);
+    auto bg = cocos2d::CCLayerColor::create(cocos2d::ccc4(51, 68, 153, 236), 348.f, 276.f);
     bg->setPosition({6.f, 6.f});
     m_mainLayer->addChild(bg, 1);
     this->setTitle("SHARE XDBOT MACROS", "goldFont.fnt", .55f, 17.f);
     m_status = cocos2d::CCLabelBMFont::create("", "chatFont.fnt");
     m_status->setScale(.45f);
-    m_mainLayer->addChildAtPosition(m_status, Anchor::Bottom, {9.f, 55.f});
+    m_mainLayer->addChildAtPosition(m_status, Anchor::Bottom, {9.f, 57.f});
     m_status->setZOrder(5);
-    if (auto* statusIcon = icon("gdr", .28f)) {
-        m_mainLayer->addChildAtPosition(statusIcon, Anchor::Bottom, {-144.f, 55.f});
+    if (auto* statusIcon = icon("gdr", .21f)) {
+        m_mainLayer->addChildAtPosition(statusIcon, Anchor::Bottom, {-144.f, 57.f});
         statusIcon->setZOrder(5);
     }
 #ifdef GEODE_IS_ANDROID
@@ -140,12 +140,12 @@ bool MacroPicker::init(fs::path folder) {
     auto clear = button("CLEAR", this, menu_selector(MacroPicker::onClear), .44f, "clear", true);
     auto save = button("EXPORT", this, menu_selector(MacroPicker::onExport), .39f, "export", true);
     auto share = button("SHARE", this, menu_selector(MacroPicker::onShare), .44f, "share", true);
-    m_buttonMenu->addChildAtPosition(prev, Anchor::Bottom, {-148.f, 21.f});
-    m_buttonMenu->addChildAtPosition(next, Anchor::Bottom, {-92.f, 21.f});
-    m_buttonMenu->addChildAtPosition(all, Anchor::Bottom, {-37.f, 21.f});
-    m_buttonMenu->addChildAtPosition(clear, Anchor::Bottom, {18.f, 21.f});
-    m_buttonMenu->addChildAtPosition(save, Anchor::Bottom, {82.f, 21.f});
-    m_buttonMenu->addChildAtPosition(share, Anchor::Bottom, {145.f, 21.f});
+    m_buttonMenu->addChildAtPosition(prev, Anchor::Bottom, {-148.f, 24.f});
+    m_buttonMenu->addChildAtPosition(next, Anchor::Bottom, {-92.f, 24.f});
+    m_buttonMenu->addChildAtPosition(all, Anchor::Bottom, {-37.f, 24.f});
+    m_buttonMenu->addChildAtPosition(clear, Anchor::Bottom, {18.f, 24.f});
+    m_buttonMenu->addChildAtPosition(save, Anchor::Bottom, {82.f, 24.f});
+    m_buttonMenu->addChildAtPosition(share, Anchor::Bottom, {145.f, 24.f});
     reload();
     return true;
 }
@@ -200,7 +200,7 @@ void MacroPicker::render() {
         auto row = rowButton(m_files[index], m_selected.contains(m_files[index]),
             this, menu_selector(MacroPicker::onToggle));
         row->setTag(static_cast<int>(index));
-        m_buttonMenu->addChildAtPosition(row, Anchor::TopLeft, {18.f, -64.f - 24.f * line}, {0.f, .5f});
+        m_buttonMenu->addChildAtPosition(row, Anchor::TopLeft, {18.f, -66.f - 36.f * line}, {0.f, .5f});
         m_rows.push_back(row);
     }
     updateStatus();
