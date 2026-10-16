@@ -24,21 +24,10 @@
   },
   "resources": {
     "files": [
-      "resources/hyperbolus-bridge.dex",
-      "resources/icons/all.png",
-      "resources/icons/clear.png",
-      "resources/icons/cml.png",
-      "resources/icons/export.png",
-      "resources/icons/gdb.png",
-      "resources/icons/gdr.png",
-      "resources/icons/gdr2.png",
-      "resources/icons/hype.png",
-      "resources/icons/json.png",
-      "resources/icons/next.png",
-      "resources/icons/prev.png",
-      "resources/icons/selected.png",
-      "resources/icons/share.png",
-      "resources/icons/unselected.png"
+      "resources/hyperbolus-bridge.dex"
+    ],
+    "folders": [
+      "resources/icons"
     ]
   }
 }

@@ -53,7 +53,7 @@ jobs:
               assert b'androidx/activity/result' not in dex
               assert b'openGDB' in dex and b'gdbrowser.com' in dex
               icons = [name for name in names if '/icons/' in name and name.endswith('.png')]
-              assert len(icons) == 14, icons
+              assert len(icons) == 14, names
               assert all(archive.read(name).startswith(b'\x89PNG\r\n\x1a\n') for name in icons)
               print('Android64 native binary, two website views, and 14 icon resources packaged; runtime not tested.')
           PY
