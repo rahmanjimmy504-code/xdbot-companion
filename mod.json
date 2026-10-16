@@ -5,9 +5,9 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.9",
+  "version": "v1.3.0-beta.12",
   "developer": "Jimmy_1234ha",
-  "description": "Android64 developer candidate: icons in the companion picker, separate in-game GDBrowser and Hyperbolus views, native local export; device tests required.",
+  "description": "Android64 beta.12 source candidate: larger, simple, unframed game-style icons with spaced action buttons and macro rows; wide GDBrowser view; device tests required.",
   "settings": {
     "share-after-save": {
       "type": "bool",

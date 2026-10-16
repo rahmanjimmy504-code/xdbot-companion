@@ -31,7 +31,7 @@ CCMenuItemSpriteExtra* button(char const* title, cocos2d::CCObject* owner,
     auto* label = cocos2d::CCLabelBMFont::create(title, "goldFont.fnt");
     label->setScale(scale);
     if (!symbol) return CCMenuItemSpriteExtra::create(label, owner, action);
-    auto* image = icon(symbol, above ? .34f : .37f);
+    auto* image = icon(symbol, above ? .42f : .34f); // 64px pictograms, not tiny tiles
     if (!image) return CCMenuItemSpriteExtra::create(label, owner, action);
     float lw = label->getContentSize().width * scale;
     float lh = label->getContentSize().height * scale;
@@ -79,19 +79,19 @@ CCMenuItemSpriteExtra* rowButton(fs::path const& path, bool selected,
     cocos2d::CCObject* owner, cocos2d::SEL_MenuHandler action) {
     auto* body = cocos2d::CCNode::create();
     body->ignoreAnchorPointForPosition(false);
-    body->setContentSize({314.f, 18.f});
-    auto* selectedIcon = icon(selected ? "selected" : "unselected", .37f);
+    body->setContentSize({314.f, 25.f});
+    auto* selectedIcon = icon(selected ? "selected" : "unselected", .39f);
     if (selectedIcon) {
-        selectedIcon->setPosition({8.f, 9.f});
+        selectedIcon->setPosition({14.f, 12.5f});
         selectedIcon->setTag(kSelectionIconTag);
         body->addChild(selectedIcon);
     }
-    auto* fileIcon = icon(formatIcon(path), .37f);
-    if (fileIcon) { fileIcon->setPosition({23.f, 9.f}); body->addChild(fileIcon); }
+    auto* fileIcon = icon(formatIcon(path), .39f);
+    if (fileIcon) { fileIcon->setPosition({43.f, 12.5f}); body->addChild(fileIcon); }
     auto* label = cocos2d::CCLabelBMFont::create(displayName(path).c_str(), "goldFont.fnt");
-    label->setScale(.45f);
+    label->setScale(.43f);
     label->setAnchorPoint({0.f, .5f});
-    label->setPosition({39.f, 9.f});
+    label->setPosition({65.f, 12.5f});
     body->addChild(label);
     return CCMenuItemSpriteExtra::create(body, owner, action);
 }
@@ -107,10 +107,10 @@ bool MacroPicker::init(fs::path folder) {
     this->setTitle("SHARE XDBOT MACROS", "goldFont.fnt", .55f, 17.f);
     m_status = cocos2d::CCLabelBMFont::create("", "chatFont.fnt");
     m_status->setScale(.45f);
-    m_mainLayer->addChildAtPosition(m_status, Anchor::Bottom, {9.f, 49.f});
+    m_mainLayer->addChildAtPosition(m_status, Anchor::Bottom, {9.f, 55.f});
     m_status->setZOrder(5);
-    if (auto* statusIcon = icon("gdr", .30f)) {
-        m_mainLayer->addChildAtPosition(statusIcon, Anchor::Bottom, {-144.f, 49.f});
+    if (auto* statusIcon = icon("gdr", .28f)) {
+        m_mainLayer->addChildAtPosition(statusIcon, Anchor::Bottom, {-144.f, 55.f});
         statusIcon->setZOrder(5);
     }
 #ifdef GEODE_IS_ANDROID
@@ -200,7 +200,7 @@ void MacroPicker::render() {
         auto row = rowButton(m_files[index], m_selected.contains(m_files[index]),
             this, menu_selector(MacroPicker::onToggle));
         row->setTag(static_cast<int>(index));
-        m_buttonMenu->addChildAtPosition(row, Anchor::TopLeft, {18.f, -62.f - 20.f * line}, {0.f, .5f});
+        m_buttonMenu->addChildAtPosition(row, Anchor::TopLeft, {18.f, -64.f - 24.f * line}, {0.f, .5f});
         m_rows.push_back(row);
     }
     updateStatus();

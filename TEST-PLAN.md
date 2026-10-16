@@ -23,7 +23,26 @@ Android32 is a **new, unverified target**. Do not infer support from Android64 o
 
 Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
 
-## Beta.9 Android64 HYPE + GDB icon/navigation check (only after the new CI artifact is reviewed)
+## Beta.12 Android64 larger icon retest (only after a NEW native CI build)
+
+1. Inspect the actual beta.12 package, confirm 14 transparent 64px icon resources and a newly built Android64 native library (not the reused beta.9 ELF). Replace older companion versions before installing. Do not treat this source ZIP as an installable package.
+2. Open the macro panel: all button icons should be visibly bigger, simple pictograms with no square photo frame. Six file rows per page should show separate selection and file-type symbols without overlap, clipped text, or a crash; test selecting/deselecting, PREV/NEXT, ALL/CLEAR and status. Test search and local EXPORT with an expendable macro.
+3. Tap GDB and check the site in the wider landscape view; test navigation to HYPE and back. If the website still shows its **Yikes** warning, capture the dialog screenshot. Do not use private macro files or send credentials/logs. This remains unverified until a Fire tablet test.
+
+## Beta.11 Android64 generated image retest
+
+1. Replace the earlier candidate with the beta.11 Android64 `.geode` file; verify HYPE/GDB, navigation, file-type and selection-state icons now look like glossy **raster image art**, in the style of the mod logo, not flat drawn glyphs. All 14 pictures should be visible and distinguishable; tap a row to confirm the selection graphic changes without crashing. A few are derived from the ten separately image-generated originals due to the per-turn image generation cap.
+2. With no macro selected, open GDB. Confirm the wider landscape dialog removes the website's **Yikes!** screen. Test BACK, CLOSE and GDB → HYPE → GDB. Do not test with private files or share passwords/logs. The wider view has not yet passed a tablet retest.
+3. If images appear too small or overlap, send a redacted screenshot with the panel unobscured. This is a repack of beta.9's CI-built Android64 native binary with beta.10's compiled DEX and beta.11's generated PNG art; no beta.11 native CI run has occurred.
+
+## Beta.10 Android64 GDB width and illustrated icon retest (after beta.9 tablet screenshot)
+
+1. Replace beta.9 with the labelled beta.10 Android64 device-test repack. Confirm the 14 icon+text button/row resources are visibly larger, colourful **picture-style images** rather than tiny thin outlines, and that buttons do not overlap or clip. Try selecting and deselecting a macro row.
+2. Tap GDB with no macro selected. On the landscape Fire tablet, confirm the dialog uses most of the screen width and the website shows the real search/level page instead of its blue **Yikes! Your screen isn't wide enough** warning. Check that the CLOSE and BACK buttons remain reachable. This layout has not been phone-verified.
+3. Switch GDB → HYPE → GDB, try public GDB search and keyboard entry, and confirm no macro or credentials were silently transferred. On a small phone, report if the site still refuses its viewport rather than pretending the fix is universal. Use no private macro in a website test.
+4. Retest local EXPORT with a disposable macro to ensure the Java DEX change did not regress native SAF save. Record redacted screenshots and exact errors. This beta.10 package reuses the *byte-identical beta.9 CI native ELF*; beta.10 has no full native CI run yet.
+
+## Beta.9 Android64 HYPE + GDB icon/navigation check (CI built, Fire tablet showed narrow GDB view and tiny icons)
 
 1. Confirm icon+text buttons, 14 bundled resources, shortened search field, one HYPE and one GDB button fit without clipping on the macro panel. Row file-format icon and selection ring/check must match each file and toggle without a crash; no xdBot-owned UI scan.
 2. With no selected macro, tap GDB. Confirm a separate GD Browser website window opens in-game, with no automatic macro attachment; search or view a public level and use BACK. External off-site links should be blocked rather than silently sent elsewhere. Do not provide any account credentials.

@@ -235,6 +235,12 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true); // Hyperbolus's own site needs JavaScript.
         settings.setDomStorageEnabled(true);
+        if (gdbMode) {
+            // GDBrowser is a landscape desktop-style site. Fit its wide layout
+            // inside the enlarged dialog without changing Hyperbolus's layout.
+            settings.setUseWideViewPort(true);
+            settings.setLoadWithOverviewMode(true);
+        }
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(true); // Needed for user-selected SAF uploads.
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
@@ -290,7 +296,7 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
         back.setOnClickListener(v -> { if (web.canGoBack()) web.goBack(); });
         nav.addView(back, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         content.addView(nav);
-        int height = (int)(activity.getResources().getDisplayMetrics().heightPixels * .70f);
+        int height = (int)(activity.getResources().getDisplayMetrics().heightPixels * (gdbMode ? .58f : .70f));
         content.addView(web, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
         websiteStage = "create website dialog";
         dialog = new AlertDialog.Builder(activity)
@@ -301,6 +307,15 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
         dialog.show();
         websiteStage = "configure website keyboard";
         if (dialog.getWindow() != null) {
+            if (gdbMode) {
+                // Screenshot on Fire tablet: a default AlertDialog was only
+                // ~670px wide on a 1568px landscape display. GDBrowser sees
+                // the *WebView* as portrait and blocks the page. Give it most
+                // of the available width, while keeping Android's own close,
+                // navigation and file-picking controls visible.
+                int width = (int)(activity.getResources().getDisplayMetrics().widthPixels * .94f);
+                dialog.getWindow().setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
+            }
             // The full-screen launcher hides its game keyboard. Keep this
             // dialog's own window focusable and attached to Android's IME.
             dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |

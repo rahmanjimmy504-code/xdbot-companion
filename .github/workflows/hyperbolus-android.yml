@@ -43,7 +43,7 @@ jobs:
               names = archive.namelist()
               meta = json.loads(archive.read('mod.json'))
               assert meta['id'] == 'jimmy_1234ha.xdbot-companion'
-              assert meta['version'] == 'v1.3.0-beta.9'
+              assert meta['version'] == 'v1.3.0-beta.12'
               assert any(name.endswith('android64.so') for name in names), names
               dex_paths = [name for name in names if name.endswith('hyperbolus-bridge.dex')]
               assert len(dex_paths) == 1, names
@@ -53,13 +53,14 @@ jobs:
               assert b'androidx/activity/result' not in dex
               assert b'openGDB' in dex and b'gdbrowser.com' in dex
               icons = [name for name in names if '/icons/' in name and name.endswith('.png')]
-              assert len(icons) == 14, names
+              assert len(icons) == 14, names  # Show archive entries if resource packaging changes.
               assert all(archive.read(name).startswith(b'\x89PNG\r\n\x1a\n') for name in icons)
-              print('Android64 native binary, two website views, and 14 icon resources packaged; runtime not tested.')
+              assert all(archive.read(name)[16:24] == bytes.fromhex('0000004000000040') for name in icons), 'Icon dimensions must be 64 x 64'
+              print('Android64 native binary, two website views, and 14 large icon resources packaged; runtime not tested.')
           PY
       - name: Upload Android-only candidate — do not release
         uses: actions/upload-artifact@v4
         with:
-          name: DEV-HYPE-GDB-ANDROID64-beta.9-UNREVIEWED
+          name: DEV-HYPE-GDB-ANDROID64-beta.12-UNREVIEWED
           path: ${{ steps.build.outputs.build-output }}
           if-no-files-found: error
