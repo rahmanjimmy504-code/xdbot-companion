@@ -15,10 +15,42 @@ using namespace geode::prelude;
 namespace fs = std::filesystem;
 
 namespace {
-CCMenuItemSpriteExtra* button(char const* title, cocos2d::CCObject* owner, cocos2d::SEL_MenuHandler action, float scale = .44f) {
-    auto label = cocos2d::CCLabelBMFont::create(title, "goldFont.fnt");
+constexpr int kSelectionIconTag = 7431;
+std::string iconPath(char const* name) {
+    return (geode::Mod::get()->getResourcesDir() / "icons" / (std::string(name) + ".png")).string();
+}
+cocos2d::CCSprite* icon(char const* name, float scale = .42f) {
+    auto path = iconPath(name);
+    auto* image = cocos2d::CCSprite::create(path.c_str());
+    if (image) image->setScale(scale);
+    return image;
+}
+CCMenuItemSpriteExtra* button(char const* title, cocos2d::CCObject* owner,
+    cocos2d::SEL_MenuHandler action, float scale = .44f, char const* symbol = nullptr,
+    bool above = false) {
+    auto* label = cocos2d::CCLabelBMFont::create(title, "goldFont.fnt");
     label->setScale(scale);
-    return CCMenuItemSpriteExtra::create(label, owner, action);
+    if (!symbol) return CCMenuItemSpriteExtra::create(label, owner, action);
+    auto* image = icon(symbol, above ? .34f : .37f);
+    if (!image) return CCMenuItemSpriteExtra::create(label, owner, action);
+    float lw = label->getContentSize().width * scale;
+    float lh = label->getContentSize().height * scale;
+    float iw = image->getContentSize().width * image->getScale();
+    float ih = image->getContentSize().height * image->getScale();
+    auto* body = cocos2d::CCNode::create();
+    body->ignoreAnchorPointForPosition(false);
+    if (above) {
+        body->setContentSize({std::max(lw, iw), lh + ih + 1.f});
+        label->setPosition({body->getContentSize().width / 2.f, lh / 2.f});
+        image->setPosition({body->getContentSize().width / 2.f, lh + ih / 2.f + 1.f});
+    } else {
+        body->setContentSize({lw + iw + 3.f, std::max(lh, ih)});
+        label->setPosition({iw + 3.f + lw / 2.f, body->getContentSize().height / 2.f});
+        image->setPosition({iw / 2.f, body->getContentSize().height / 2.f});
+    }
+    body->addChild(label);
+    body->addChild(image);
+    return CCMenuItemSpriteExtra::create(body, owner, action);
 }
 void alert(char const* title, std::string text) {
     geode::createQuickPopup(title, std::move(text), "OK", nullptr, [](auto*, bool) {});
@@ -26,8 +58,42 @@ void alert(char const* title, std::string text) {
 std::string displayName(fs::path const& p) {
     auto name = p.filename().string();
     std::replace_if(name.begin(), name.end(), [](char ch) { return ch == '<' || ch == '>'; }, '_');
-    if (name.size() > 37) name.resize(34), name += "...";
+    if (name.size() > 30) {
+        std::size_t cut = 27;
+        while (cut && (static_cast<unsigned char>(name[cut]) & 0xc0) == 0x80) --cut;
+        name.resize(cut);
+        name += "...";
+    }
     return name;
+}
+char const* formatIcon(fs::path const& path) {
+    auto extension = path.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    if (extension == ".json") return "json";
+    if (extension == ".gdr2") return "gdr2";
+    if (extension == ".cml") return "cml";
+    return "gdr";
+}
+CCMenuItemSpriteExtra* rowButton(fs::path const& path, bool selected,
+    cocos2d::CCObject* owner, cocos2d::SEL_MenuHandler action) {
+    auto* body = cocos2d::CCNode::create();
+    body->ignoreAnchorPointForPosition(false);
+    body->setContentSize({314.f, 18.f});
+    auto* selectedIcon = icon(selected ? "selected" : "unselected", .37f);
+    if (selectedIcon) {
+        selectedIcon->setPosition({8.f, 9.f});
+        selectedIcon->setTag(kSelectionIconTag);
+        body->addChild(selectedIcon);
+    }
+    auto* fileIcon = icon(formatIcon(path), .37f);
+    if (fileIcon) { fileIcon->setPosition({23.f, 9.f}); body->addChild(fileIcon); }
+    auto* label = cocos2d::CCLabelBMFont::create(displayName(path).c_str(), "goldFont.fnt");
+    label->setScale(.45f);
+    label->setAnchorPoint({0.f, .5f});
+    label->setPosition({39.f, 9.f});
+    body->addChild(label);
+    return CCMenuItemSpriteExtra::create(body, owner, action);
 }
 } // namespace
 
@@ -41,9 +107,17 @@ bool MacroPicker::init(fs::path folder) {
     this->setTitle("SHARE XDBOT MACROS", "goldFont.fnt", .55f, 17.f);
     m_status = cocos2d::CCLabelBMFont::create("", "chatFont.fnt");
     m_status->setScale(.45f);
-    m_mainLayer->addChildAtPosition(m_status, Anchor::Bottom, {0.f, 49.f});
+    m_mainLayer->addChildAtPosition(m_status, Anchor::Bottom, {9.f, 49.f});
     m_status->setZOrder(5);
+    if (auto* statusIcon = icon("gdr", .30f)) {
+        m_mainLayer->addChildAtPosition(statusIcon, Anchor::Bottom, {-144.f, 49.f});
+        statusIcon->setZOrder(5);
+    }
+#ifdef GEODE_IS_ANDROID
+    auto* search = geode::TextInput::create(174.f, "Find macro...", "chatFont.fnt");
+#else
     auto* search = geode::TextInput::create(232.f, "Find saved macro...", "chatFont.fnt");
+#endif
     if (!search) return false;
     search->setMaxCharCount(80);
     search->setCallback([this](std::string const& query) {
@@ -51,17 +125,21 @@ bool MacroPicker::init(fs::path folder) {
         m_page = 0;
         applyFilter();
     });
-    m_mainLayer->addChildAtPosition(search, Anchor::Top, {0.f, -31.f});
 #ifdef GEODE_IS_ANDROID
-    auto hype = button("HYPE", this, menu_selector(MacroPicker::onHyperbolus), .45f);
-    m_buttonMenu->addChildAtPosition(hype, Anchor::Top, {145.f, -31.f});
+    m_mainLayer->addChildAtPosition(search, Anchor::Top, {-61.f, -31.f});
+    auto hype = button("HYPE", this, menu_selector(MacroPicker::onHyperbolus), .40f, "hype");
+    auto gdb = button("GDB", this, menu_selector(MacroPicker::onGDBrowser), .40f, "gdb");
+    m_buttonMenu->addChildAtPosition(hype, Anchor::Top, {81.f, -31.f});
+    m_buttonMenu->addChildAtPosition(gdb, Anchor::Top, {145.f, -31.f});
+#else
+    m_mainLayer->addChildAtPosition(search, Anchor::Top, {0.f, -31.f});
 #endif
-    auto prev = button("PREV", this, menu_selector(MacroPicker::onPrev));
-    auto next = button("NEXT", this, menu_selector(MacroPicker::onNext));
-    auto all = button("ALL", this, menu_selector(MacroPicker::onAll));
-    auto clear = button("CLEAR", this, menu_selector(MacroPicker::onClear));
-    auto save = button("EXPORT", this, menu_selector(MacroPicker::onExport), .39f);
-    auto share = button("SHARE", this, menu_selector(MacroPicker::onShare));
+    auto prev = button("PREV", this, menu_selector(MacroPicker::onPrev), .44f, "prev", true);
+    auto next = button("NEXT", this, menu_selector(MacroPicker::onNext), .44f, "next", true);
+    auto all = button("ALL", this, menu_selector(MacroPicker::onAll), .44f, "all", true);
+    auto clear = button("CLEAR", this, menu_selector(MacroPicker::onClear), .44f, "clear", true);
+    auto save = button("EXPORT", this, menu_selector(MacroPicker::onExport), .39f, "export", true);
+    auto share = button("SHARE", this, menu_selector(MacroPicker::onShare), .44f, "share", true);
     m_buttonMenu->addChildAtPosition(prev, Anchor::Bottom, {-148.f, 21.f});
     m_buttonMenu->addChildAtPosition(next, Anchor::Bottom, {-92.f, 21.f});
     m_buttonMenu->addChildAtPosition(all, Anchor::Bottom, {-37.f, 21.f});
@@ -119,8 +197,8 @@ void MacroPicker::render() {
     for (std::size_t line = 0; line < perPage; ++line) {
         auto index = m_page * perPage + line;
         if (index >= m_files.size()) break;
-        auto text = std::string(m_selected.contains(m_files[index]) ? "[X] " : "[ ] ") + displayName(m_files[index]);
-        auto row = button(text.c_str(), this, menu_selector(MacroPicker::onToggle), .47f);
+        auto row = rowButton(m_files[index], m_selected.contains(m_files[index]),
+            this, menu_selector(MacroPicker::onToggle));
         row->setTag(static_cast<int>(index));
         m_buttonMenu->addChildAtPosition(row, Anchor::TopLeft, {18.f, -62.f - 20.f * line}, {0.f, .5f});
         m_rows.push_back(row);
@@ -132,11 +210,16 @@ void MacroPicker::onToggle(cocos2d::CCObject* sender) {
     if (index >= m_files.size()) return;
     auto const& file = m_files[index];
     if (!m_selected.erase(file)) m_selected.insert(file);
-    // Do not remove the button that is currently dispatching this callback.
+    // Update our own icon in place. Never remove the dispatching row or scan
+    // xdBot-owned children (the old RTTI scan caused a phone crash).
     auto* item = static_cast<CCMenuItemSpriteExtra*>(sender);
-    auto* label = static_cast<cocos2d::CCLabelBMFont*>(item->getNormalImage());
-    auto text = std::string(m_selected.contains(file) ? "[X] " : "[ ] ") + displayName(file);
-    label->setString(text.c_str());
+    auto* body = item->getNormalImage();
+    auto* image = body ? static_cast<cocos2d::CCSprite*>(body->getChildByTag(kSelectionIconTag)) : nullptr;
+    if (image) {
+        auto path = iconPath(m_selected.contains(file) ? "selected" : "unselected");
+        auto* texture = cocos2d::CCTextureCache::sharedTextureCache()->addImage(path.c_str(), false);
+        if (texture) image->setTexture(texture);
+    }
     updateStatus();
 }
 void MacroPicker::onNext(cocos2d::CCObject*) {
@@ -181,6 +264,13 @@ void MacroPicker::onHyperbolus(cocos2d::CCObject*) {
     }
     std::string error;
     if (!openHyperbolusAndroid(selected, error)) alert("Hyperbolus unavailable", error);
+#endif
+}
+void MacroPicker::onGDBrowser(cocos2d::CCObject*) {
+#ifdef GEODE_IS_ANDROID
+    // Browsing never carries the companion's selected macros to GD Browser.
+    std::string error;
+    if (!openGDBrowserAndroid(error)) alert("GD Browser unavailable", error);
 #endif
 }
 void MacroPicker::onShare(cocos2d::CCObject*) {

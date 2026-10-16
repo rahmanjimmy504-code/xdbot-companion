@@ -37,6 +37,8 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     private final Activity activity;
     private final Uri selectedMacro;
     private final String selectedName;
+    private final boolean gdbMode;
+    private Boolean switchToGdb;
     private WebView web;
     private AlertDialog dialog;
     private static Uri pendingExportSource;
@@ -47,26 +49,55 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     private ValueCallback<Uri[]> fileCallback;
     private String pendingDownload;
     private String pendingUserAgent;
+    private String websiteStage = "before WebView setup";
 
-    private HyperbolusBridge(Activity activity, Uri selectedMacro, String selectedName) {
+    private HyperbolusBridge(Activity activity, Uri selectedMacro, String selectedName, boolean gdbMode) {
         this.activity = activity;
         this.selectedMacro = selectedMacro;
         this.selectedName = selectedName;
+        this.gdbMode = gdbMode;
     }
 
     public static void open(Activity activity, Uri macro, String name) {
+        openMode(activity, macro, name, false);
+    }
+
+    // Distinct browser instance: no local macro is offered on GDBrowser.
+    public static void openGDB(Activity activity, Uri unused, String unusedName) {
+        openMode(activity, null, "", true);
+    }
+
+    private static void openMode(Activity activity, Uri macro, String name, boolean gdbMode) {
         activity.runOnUiThread(() -> {
             if (active != null) {
-                if (active.dialog != null) active.dialog.show();
+                if (active.dialog != null && active.gdbMode != gdbMode) active.switchSite(gdbMode);
+                else if (active.dialog != null && !active.dialog.isShowing()) active.dialog.show();
                 return;
             }
-            HyperbolusBridge bridge = new HyperbolusBridge(activity, macro, name);
+            HyperbolusBridge bridge = new HyperbolusBridge(activity, macro, name, gdbMode);
             // Do not depend on any picker setup just to open the website.
             active = bridge;
             try { bridge.show(); }
             catch (RuntimeException e) {
+                // Beta.6 discarded the exception message, hiding whether the
+                // WebView provider or the Android window actually failed.
+                android.util.Log.e("XdBotHyperbolus", "Website stage: " + bridge.websiteStage, e);
                 active = null;
-                Toast.makeText(activity, "Website window failed: " + e.getClass().getSimpleName(), Toast.LENGTH_LONG).show();
+                try {
+                    if (bridge.dialog != null && bridge.dialog.isShowing()) bridge.dialog.dismiss();
+                    else if (bridge.web != null) bridge.web.destroy();
+                } catch (RuntimeException ignored) { }
+                String detail = e.getMessage();
+                if (detail == null && e.getCause() != null) detail = e.getCause().toString();
+                if (detail == null) detail = "No additional message; check Android logs.";
+                if (detail.length() > 600) detail = detail.substring(0, 600);
+                String message = "Stage: " + bridge.websiteStage + "\n" + e.getClass().getName() + "\n" + detail;
+                try {
+                    new AlertDialog.Builder(activity).setTitle("HYPE diagnostic")
+                        .setMessage(message).setPositiveButton("OK", (d, which) -> { }).show();
+                } catch (RuntimeException dialogError) {
+                    Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -121,6 +152,10 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     private static boolean site(Uri uri) {
         return uri != null && HyperbolusRules.trustedUrl(uri.getScheme(), uri.getHost(), uri.getPort());
     }
+    private static boolean gdbSite(Uri uri) {
+        return uri != null && HyperbolusRules.trustedGdbUrl(uri.getScheme(), uri.getHost(), uri.getPort());
+    }
+    private boolean allowed(Uri uri) { return gdbMode ? gdbSite(uri) : site(uri); }
     private void toast(String message) { Toast.makeText(activity, message, Toast.LENGTH_LONG).show(); }
 
     // Framework Fragment is used deliberately: the released Geode launcher
@@ -183,8 +218,20 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
         }
     }
 
+    // AlertDialog checks its custom view tree for a text editor before it
+    // connects its window to the IME. A plain WebView may report false until
+    // an HTML input already has focus, leaving the dialog unable to type.
+    public static final class InputFriendlyWebView extends WebView {
+        public InputFriendlyWebView(Activity activity) { super(activity); }
+        @Override public boolean onCheckIsTextEditor() { return true; }
+    }
+
     private void show() {
-        web = new WebView(activity);
+        websiteStage = "construct WebView";
+        web = new InputFriendlyWebView(activity);
+        web.setFocusable(true);
+        web.setFocusableInTouchMode(true);
+        websiteStage = "configure WebView";
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true); // Hyperbolus's own site needs JavaScript.
         settings.setDomStorageEnabled(true);
@@ -192,22 +239,25 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
         settings.setAllowContentAccess(true); // Needed for user-selected SAF uploads.
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        websiteStage = "configure WebView cookies";
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false);
+        websiteStage = "configure WebView security";
         settings.setAllowFileAccessFromFileURLs(false);
         settings.setAllowUniversalAccessFromFileURLs(false);
         if (Build.VERSION.SDK_INT >= 26) settings.setSafeBrowsingEnabled(true);
+        websiteStage = "connect WebView callbacks";
         web.setWebChromeClient(this);
         web.setDownloadListener(this);
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (request.isForMainFrame()) {
-                    if (!site(request.getUrl())) {
-                        toast("Blocked a link outside hyperbolus.net."); return true;
+                    if (!allowed(request.getUrl())) {
+                        toast("Blocked a link outside this browser's website."); return true;
                     }
-                    // Capture the site's download link before it redirects to signed
-                    // external object storage. The app never forwards site cookies
-                    // to the storage host; the user chooses the SAF destination.
-                    if (request.getUrl().getPath() != null && request.getUrl().getPath().startsWith("/download/")) {
+                    // Hyperbolus download links redirect to signed storage;
+                    // capture them before the WebView leaves the trusted site.
+                    if (!gdbMode && request.getUrl().getPath() != null &&
+                        request.getUrl().getPath().startsWith("/download/")) {
                         queueDownload(request.getUrl().toString(), view.getSettings().getUserAgentString(),
                             "hyperbolus-macro");
                         return true;
@@ -216,43 +266,83 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
                 return false;
             }
             @Override public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                handler.cancel(); toast("Hyperbolus TLS certificate check failed.");
+                handler.cancel(); toast("Website TLS certificate check failed.");
             }
         });
+        websiteStage = "create browser controls";
         LinearLayout content = new LinearLayout(activity);
         content.setOrientation(LinearLayout.VERTICAL);
         LinearLayout nav = new LinearLayout(activity);
         nav.setOrientation(LinearLayout.HORIZONTAL);
-        addNav(nav, "LOGIN", "https://hyperbolus.net/auth/login");
-        addNav(nav, "REPLAYS", "https://hyperbolus.net/replays");
-        addNav(nav, "UPLOAD", "https://hyperbolus.net/replays/new");
+        if (gdbMode) {
+            addNav(nav, "GDB HOME", "https://gdbrowser.com/", android.R.drawable.ic_menu_search);
+            addSiteSwitch(nav, "HYPE", false, android.R.drawable.ic_menu_view);
+        } else {
+            addNav(nav, "LOGIN", "https://hyperbolus.net/auth/login", android.R.drawable.ic_lock_lock);
+            addNav(nav, "REPLAYS", "https://hyperbolus.net/replays", android.R.drawable.ic_menu_agenda);
+            addNav(nav, "UPLOAD", "https://hyperbolus.net/replays/new", android.R.drawable.ic_menu_upload);
+            addSiteSwitch(nav, "GDB", true, android.R.drawable.ic_menu_search);
+        }
         Button back = new Button(activity);
         back.setText("BACK");
+        back.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_previous, 0, 0, 0);
+        back.setCompoundDrawablePadding(4);
         back.setOnClickListener(v -> { if (web.canGoBack()) web.goBack(); });
         nav.addView(back, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         content.addView(nav);
         int height = (int)(activity.getResources().getDisplayMetrics().heightPixels * .70f);
         content.addView(web, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
-        dialog = new AlertDialog.Builder(activity).setTitle("Hyperbolus: manual website")
+        websiteStage = "create website dialog";
+        dialog = new AlertDialog.Builder(activity)
+            .setTitle(gdbMode ? "GD Browser: manual website" : "Hyperbolus: manual website")
             .setView(content).setNegativeButton("CLOSE", (d, which) -> { }).create();
         dialog.setOnDismissListener(d -> close());
+        websiteStage = "show website dialog";
         dialog.show();
-        if (dialog.getWindow() != null)
-            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        web.loadUrl("https://hyperbolus.net/auth/login");
+        websiteStage = "configure website keyboard";
+        if (dialog.getWindow() != null) {
+            // The full-screen launcher hides its game keyboard. Keep this
+            // dialog's own window focusable and attached to Android's IME.
+            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+            dialog.getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE |
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        }
+        websiteStage = "load website home page";
+        web.loadUrl(gdbMode ? "https://gdbrowser.com/" : "https://hyperbolus.net/auth/login");
+        websiteStage = "website opened";
     }
-    private void addNav(LinearLayout row, String label, String url) {
+    private void addNav(LinearLayout row, String label, String url, int icon) {
         Button button = new Button(activity);
         button.setText(label);
+        button.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
+        button.setCompoundDrawablePadding(4);
         button.setOnClickListener(v -> web.loadUrl(url));
         row.addView(button, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
     }
+    private void addSiteSwitch(LinearLayout row, String label, boolean toGdb, int icon) {
+        Button button = new Button(activity);
+        button.setText(label);
+        button.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
+        button.setCompoundDrawablePadding(4);
+        button.setOnClickListener(v -> switchSite(toGdb));
+        row.addView(button, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+    }
+    private void switchSite(boolean toGdb) {
+        if (gdbMode == toGdb || dialog == null) return;
+        switchToGdb = toGdb;
+        dialog.dismiss(); // The dismiss callback creates a fresh, separate WebView.
+    }
     private void close() {
+        Boolean next = switchToGdb;
+        switchToGdb = null;
         if (fileCallback != null) { fileCallback.onReceiveValue(null); fileCallback = null; }
         if (web != null) { web.stopLoading(); web.destroy(); web = null; }
         dialog = null;
         active = null;
-        // Do not erase Hyperbolus's own login cookies; the user can sign out on its website.
+        // Browser cookies remain scoped to each website. No mod-owned password field.
+        if (next != null) openMode(activity, null, "", next);
     }
 
     private static boolean supportedUpload(String filename) {
@@ -266,7 +356,7 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     }
     private void uploadPicked(Uri uri) {
         if (fileCallback == null) return;
-        if (uri != null && !supportedUpload(documentName(uri))) {
+        if (uri != null && !gdbMode && !supportedUpload(documentName(uri))) {
             toast("Unsupported for Hyperbolus: choose a .gdr or .json file. .cml and .gdr2 are not accepted.");
             uri = null;
         }
@@ -276,6 +366,20 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     }
     @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
         Uri page = Uri.parse(view.getUrl() == null ? "" : view.getUrl());
+        if (gdbMode) {
+            if (!gdbSite(page)) {
+                toast("Choose files only while on gdbrowser.com.");
+                callback.onReceiveValue(null); return true;
+            }
+            if (fileCallback != null) fileCallback.onReceiveValue(null);
+            fileCallback = callback;
+            new AlertDialog.Builder(activity).setTitle("Choose a file for GD Browser?")
+                .setMessage("The companion will not pick a file for you. This website may process a file after you choose it. Continue to Android's file picker?")
+                .setPositiveButton("CHOOSE FILE", (d, which) -> launchOpen())
+                .setNegativeButton("CANCEL", (d, which) -> uploadPicked(null))
+                .setOnCancelListener(d -> uploadPicked(null)).show();
+            return true;
+        }
         if (!site(page) || !"/replays/new".equals(page.getPath())) {
             toast("Choose files only on Hyperbolus's replay upload page.");
             callback.onReceiveValue(null);
@@ -300,8 +404,9 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
     }
 
     @Override public void onDownloadStart(String url, String userAgent, String disposition, String mime, long length) {
-        // Downloads must originate on Hyperbolus; storage redirects are followed below without forwarding cookies.
-        if (!site(Uri.parse(url))) { toast("Blocked a download outside hyperbolus.net."); return; }
+        // Downloads must originate on the active site. No site cookies are sent
+        // to signed or unrelated external HTTPS storage during redirect follow.
+        if (!allowed(Uri.parse(url))) { toast("Blocked a download outside this browser's website."); return; }
         String name = HyperbolusRules.cleanFilename(URLUtil.guessFileName(url, disposition, mime));
         queueDownload(url, userAgent, name);
     }
@@ -330,7 +435,7 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
                 connection.setInstanceFollowRedirects(false);
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(30000);
-                if (site(Uri.parse(url.toString()))) {
+                if (allowed(Uri.parse(url.toString()))) {
                     String cookies = CookieManager.getInstance().getCookie(url.toString());
                     if (cookies != null) connection.setRequestProperty("Cookie", cookies);
                 }
@@ -359,7 +464,7 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
                     out.flush();
                 }
                 if (total == 0) throw new Exception("Empty download");
-                activity.runOnUiThread(() -> toast("Macro saved to your chosen location."));
+                activity.runOnUiThread(() -> toast("File saved to your chosen location."));
                 return;
             }
             throw new Exception("Too many download redirects");

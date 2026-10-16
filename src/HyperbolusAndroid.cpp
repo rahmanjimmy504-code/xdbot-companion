@@ -25,7 +25,7 @@ static bool invokeAndroidDocumentBridge(std::optional<fs::path> selected, char c
         return false;
     }
     auto saveDir = geode::Mod::get()->getSaveDir();
-    auto dex = saveDir / "hyperbolus-bridge-v1.3.0-beta.6.dex";
+    auto dex = saveDir / "hyperbolus-bridge-v1.3.0-beta.9.dex";
     if (!s_bridge) {
         fs::create_directories(saveDir, ec);
         if (!ec) fs::remove(dex, ec);
@@ -164,4 +164,8 @@ bool openHyperbolusAndroid(std::optional<fs::path> selected, std::string& error)
 
 bool exportMacroAndroid(fs::path const& source, std::string& error) {
     return invokeAndroidDocumentBridge(source, "export", error);
+}
+
+bool openGDBrowserAndroid(std::string& error) {
+    return invokeAndroidDocumentBridge(std::nullopt, "openGDB", error);
 }

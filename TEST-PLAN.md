@@ -22,3 +22,11 @@ Android32 is a **new, unverified target**. Do not infer support from Android64 o
 ## Beta.3 search field checks
 
 Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
+
+## Beta.9 Android64 HYPE + GDB icon/navigation check (only after the new CI artifact is reviewed)
+
+1. Confirm icon+text buttons, 14 bundled resources, shortened search field, one HYPE and one GDB button fit without clipping on the macro panel. Row file-format icon and selection ring/check must match each file and toggle without a crash; no xdBot-owned UI scan.
+2. With no selected macro, tap GDB. Confirm a separate GD Browser website window opens in-game, with no automatic macro attachment; search or view a public level and use BACK. External off-site links should be blocked rather than silently sent elsewhere. Do not provide any account credentials.
+3. Tap HYPE in the GDB window and GDB in the HYPE window. Confirm each site gets a fresh WebView and a working keyboard. HYPE's supported-format checks, per-file attachment confirmation and own Submit still apply. Do not upload a private file.
+4. GDB website file requests, if any, should ask for confirmation *before* Android's picker. Test CANCEL with no file transfer. A website may itself process a file after a user chooses it; do not test with a private macro.
+5. Local EXPORT should still invoke Android's save picker and save the correct bytes. A successful native build alone is not a website or upload test. Record version, redacted screenshots, and any precise error. Do not use an unrelated Geometry Dash level ID to bypass Hyperbolus's `400 Level could not be fetched` response.

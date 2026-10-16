@@ -11,6 +11,11 @@ public final class HyperbolusRules {
             (host.equalsIgnoreCase("hyperbolus.net") || host.equalsIgnoreCase("www.hyperbolus.net")) &&
             (port == -1 || port == 443);
     }
+    public static boolean trustedGdbUrl(String scheme, String host, int port) {
+        return scheme != null && scheme.equalsIgnoreCase("https") && host != null &&
+            (host.equalsIgnoreCase("gdbrowser.com") || host.equalsIgnoreCase("www.gdbrowser.com")) &&
+            (port == -1 || port == 443);
+    }
     public static boolean supportedUpload(String filename) {
         if (filename == null) return false;
         String lower = filename.toLowerCase(Locale.ROOT);

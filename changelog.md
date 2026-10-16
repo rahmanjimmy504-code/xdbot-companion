@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.3.0-beta.9 — Android64 icon and GDBrowser source candidate
+- Add 14 original small icon PNG resources to the companion's action buttons, macro-format rows, selection state and status; preserve readable labels. Put a new GDB button beside HYPE with a narrower search field. No xdBot-owned art or child scan is used.
+- Add a **separate in-game GD Browser WebView** at https://gdbrowser.com/ from the macro panel, plus HYPE/GDB switches in the browser controls. Each switch creates its own site WebView; no selected macro is handed to GDB automatically. HTTPS host checks distinguish the two sites. GD Browser's own forms and same-site navigation work; a site file request asks for explicit user confirmation and uses Android's document picker.
+- Keep the beta.8 Fire OS keyboard fix, beta.6 URI-based local EXPORT, Hyperbolus's supported-format/confirmation rules and SAF downloads. Hyperbolus still depends on its server accepting a valid level ID (15031583 returned a server-side 400); this mod does not bypass that.
+- Java/D8 and local policy checks pass. Android64 C++ CI, resource packaging, screen layout and both website flows in beta.9 are **not yet phone-tested**. The final other-platform ports are pending; do not release this candidate.
+
+## v1.3.0-beta.8 — Android64 website keyboard test, unreviewed
+- Phone test after enabling Amazon System WebView confirmed HYPE opens, but the website input keyboard does not appear. Make the WebView report that it hosts a text editor and keep its AlertDialog window connected to the Android IME; do not open a mod-owned password field or capture key events.
+- Retain beta.7 failure diagnostics and the beta.6 CI-built native binary with its phone-confirmed local EXPORT. This Java DEX-only repack has passed compilation, not a beta.8 CI build or keyboard phone test. Do not treat login/upload/download as verified.
+
+## v1.3.0-beta.7 — Android64 HYPE diagnostic, not a confirmed fix
+- Keep the beta.6 Android64 native binary and Android EXPORT behavior. Replace only the embedded Java DEX to display the exact HYPE failure stage, exception name and message, and log a stack trace locally. This distinguishes a missing Android WebView provider from a window or page-load error.
+- Beta.6 HYPE still fails on a phone with `AndroidRuntimeException`; do not enter a Hyperbolus password or call this a working integration. This diagnostic package is repacked from the inspected beta.6 CI artifact; beta.7 native CI and phone tests have not run.
+
 ## v1.3.0-beta.6 — Android document URI fix, development candidate
 - Fix HYPE's pre-browser picker setup failure seen on a phone: remove reflection over launcher-specific contract names. A companion-owned Android framework Fragment starts the Android document UI and receives actual SAF content URIs for website file choice and account downloads; do not use Geode's guessed filesystem path. Unlike AndroidX classes in the released Geode launcher, Android SDK framework class names cannot be obfuscated by the launcher.
 - Enable Android EXPORT for one selected local macro through ACTION_CREATE_DOCUMENT and ContentResolver streams. This handles .gdr, .gdr.json, .cml and .gdr2 locally; .cml/.gdr2 remain unsupported for Hyperbolus uploads.

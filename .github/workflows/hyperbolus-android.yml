@@ -1,4 +1,4 @@
-name: Android64 Hyperbolus native WebView (DEVELOPER TEST ONLY)
+name: Android64 HYPE and GDB WebViews (DEVELOPER TEST ONLY)
 
 on:
   push:
@@ -43,18 +43,23 @@ jobs:
               names = archive.namelist()
               meta = json.loads(archive.read('mod.json'))
               assert meta['id'] == 'jimmy_1234ha.xdbot-companion'
-              assert meta['version'] == 'v1.3.0-beta.6'
+              assert meta['version'] == 'v1.3.0-beta.9'
               assert any(name.endswith('android64.so') for name in names), names
               dex_paths = [name for name in names if name.endswith('hyperbolus-bridge.dex')]
               assert len(dex_paths) == 1, names
               dex = archive.read(dex_paths[0])
-              assert dex[:4] == bytes([100, 101, 120, 10]) and b'DocumentFragment' in dex
+              assert dex[:4] == bytes([100, 101, 120, 10]), 'Embedded resource is not a DEX file'
+              assert b'DocumentFragment' in dex, 'Document picker receiver not packaged'
               assert b'androidx/activity/result' not in dex
-              print('Android64 native binary and framework-Fragment bridge dex packaged; runtime not tested.')
+              assert b'openGDB' in dex and b'gdbrowser.com' in dex
+              icons = [name for name in names if '/icons/' in name and name.endswith('.png')]
+              assert len(icons) == 14, icons
+              assert all(archive.read(name).startswith(b'\x89PNG\r\n\x1a\n') for name in icons)
+              print('Android64 native binary, two website views, and 14 icon resources packaged; runtime not tested.')
           PY
       - name: Upload Android-only candidate — do not release
         uses: actions/upload-artifact@v4
         with:
-          name: DEV-HYPERBOLUS-ANDROID64-beta.6-UNREVIEWED
+          name: DEV-HYPE-GDB-ANDROID64-beta.9-UNREVIEWED
           path: ${{ steps.build.outputs.build-output }}
           if-no-files-found: error

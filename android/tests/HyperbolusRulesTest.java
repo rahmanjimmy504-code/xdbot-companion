@@ -9,6 +9,12 @@ public final class HyperbolusRulesTest {
         check(!HyperbolusRules.trustedUrl("https", "hyperbolus.net.evil.example", 443));
         check(!HyperbolusRules.trustedUrl("https", "evil.example", 443));
         check(!HyperbolusRules.trustedUrl("https", "hyperbolus.net", 8443));
+        check(HyperbolusRules.trustedGdbUrl("https", "gdbrowser.com", -1));
+        check(HyperbolusRules.trustedGdbUrl("HTTPS", "www.gdbrowser.com", 443));
+        check(!HyperbolusRules.trustedGdbUrl("http", "gdbrowser.com", 80));
+        check(!HyperbolusRules.trustedGdbUrl("https", "gdbrowser.com.evil.example", 443));
+        check(!HyperbolusRules.trustedGdbUrl("https", "hyperbolus.net", 443));
+        check(!HyperbolusRules.trustedGdbUrl("https", "gdbrowser.com", 8443));
         check(HyperbolusRules.supportedUpload("recording.gdr"));
         check(HyperbolusRules.supportedUpload("recording.GDR.JSON"));
         check(!HyperbolusRules.supportedUpload("recording.cml"));

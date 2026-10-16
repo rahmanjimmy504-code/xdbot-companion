@@ -1,10 +1,10 @@
-# Hyperbolus status — Android-first development branch
+# HYPE + GD Browser status — Android-first development branch
 
-| Platform | Hyperbolus browser | User-tested? |
+| Platform | In-game website source | Phone/device result |
 |---|---|---|
-| Android64 | Beta.5 CI passed but failed phone picker test. Beta.6 URI-based picker/export source and dex built locally; beta.6 CI pending | Beta.5 failure; beta.6 not tested |
-| Android32 | Same Android source expected to compile later; no separate build | No |
-| Windows x64 | Embedded WebView2 backend not implemented | No |
-| iOS arm64 | Embedded WKWebView backend not implemented | No |
+| Android64 | Beta.9 adds icons and a separate GD Browser website view beside the existing Hyperbolus view; native CI pending | Beta.8 Hyperbolus window, keyboard typing and local EXPORT worked on the user's Fire tablet. Beta.9 GDB and UI untested. |
+| Android32 | Website backends not separately built | No test |
+| Windows x64 | Embedded WebView2 backend not implemented | No test |
+| iOS arm64 | Embedded WKWebView backend not implemented | No test |
 
-No platform has verified website login, manual file upload or account download yet. The combined four-platform beta.4 and older beta.3 do not contain Hyperbolus. Android website form and SAF stream path are actual code in this branch, not a claim of device functionality. Only Android64 is in the current test workflow. No native Linux/macOS target.
+Hyperbolus account login and account download have not been fully verified. The user encountered a 400 submitting a replay for level 15031583; the public Hyperbolus level page for that ID independently returned `Level could not be fetched`. This does not validate attachment or imply a companion upload failure. Do not use an unrelated level ID as a workaround. Beta.9 is not a public release. Linux/macOS are out of scope.

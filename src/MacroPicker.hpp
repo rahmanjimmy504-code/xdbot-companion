@@ -29,6 +29,7 @@ class MacroPicker : public geode::Popup {
     void onClear(cocos2d::CCObject*);
     void onExport(cocos2d::CCObject*);
     void onHyperbolus(cocos2d::CCObject*);
+    void onGDBrowser(cocos2d::CCObject*);
     void onShare(cocos2d::CCObject*);
 public:
     static MacroPicker* create(std::filesystem::path folder);
