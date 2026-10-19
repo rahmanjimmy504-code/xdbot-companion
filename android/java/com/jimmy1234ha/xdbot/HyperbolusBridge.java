@@ -369,15 +369,38 @@ public final class HyperbolusBridge extends WebChromeClient implements DownloadL
         } catch (Exception ignored) { }
         return null;
     }
-    private void uploadPicked(Uri uri) {
+    private void deliverUpload(Uri uri) {
         if (fileCallback == null) return;
-        if (uri != null && !gdbMode && !supportedUpload(documentName(uri))) {
-            toast("Unsupported for Hyperbolus: choose a .gdr or .json file. .cml and .gdr2 are not accepted.");
-            uri = null;
-        }
         ValueCallback<Uri[]> callback = fileCallback;
         fileCallback = null;
         callback.onReceiveValue(uri == null ? null : new Uri[]{uri});
+    }
+    private void uploadPicked(Uri uri) {
+        if (fileCallback == null) return;
+        if (uri != null && !gdbMode) {
+            // The companion already validated a preselected macro's filename;
+            // its content provider may not expose DISPLAY_NAME on every ROM.
+            // Manually chosen documents must provide a readable display name.
+            boolean preselected = selectedMacro != null && uri.equals(selectedMacro);
+            String name = preselected ? selectedName : documentName(uri);
+            if (!supportedUpload(name)) {
+                toast("Unsupported for Hyperbolus: choose a .gdr or .json file. .cml and .gdr2 are not accepted.");
+                deliverUpload(null);
+                return;
+            }
+            // Preselected macros have already passed the ATTACH confirmation
+            // below. A manually picked document must get its own confirmation
+            // before the URI is returned to the website's file input.
+            if (!preselected) {
+                new AlertDialog.Builder(activity).setTitle("Attach chosen replay?")
+                    .setMessage(name + "\nOnly this file will be offered to Hyperbolus. Check the filename before continuing; the website may process it after attachment.")
+                    .setPositiveButton("ATTACH", (d, which) -> deliverUpload(uri))
+                    .setNegativeButton("CANCEL", (d, which) -> deliverUpload(null))
+                    .setOnCancelListener(d -> deliverUpload(null)).show();
+                return;
+            }
+        }
+        deliverUpload(uri);
     }
     @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
         Uri page = Uri.parse(view.getUrl() == null ? "" : view.getUrl());

@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.3.0-beta.16 — experimental AI macro attempt source (NO NATIVE BUILD)
+- Combine all beta.15 independent companion features with an OFF-by-default Android gameplay experiment. A bounded local timing search proposes player-1 jump presses after failures, then asks the user to re-enter the same level for an exact repeat run. Only after two matching reported completions is a **local `.gdr.json` compatibility candidate** written to xdBot's configured macro folder. No auto upload or cloud API.
+- Reject practice, platformer and dual modes; manual input, manual restart, the setting toggle and an attempt limit can cancel. This is not a general vision/ML agent; it may never finish a level. Game hooks, replay timing and xdBot import are untested. See `AI-RECORD-ANDROID64-STATUS.md` and do **not** release as a working AI mod.
+- Keep XD TOOLS pause panel and the FPS/deaths HUD removed; native Android64 CI, device safety tests and imported-macro replay validation are mandatory. No beta.16 `.geode` exists yet.
+
+## v1.3.0-beta.15 — REA-informed safety and confirmation (source candidate)
+- REA 6.5.0 inventoried the authorized xdBot 2.7.7 Geode package. The Android64 ELF symbol table confirms distinct LoadMacroLayer import/list/search actions and macro GDR2 handling; this is metadata/symbol evidence, **not** decompiled original source or a complete recreation. See `REA-INVESTIGATION.md` for evidence and limits.
+- Share preflight now reuses local-export checks for every selected file: only recognized macro filenames, nonempty regular files, no symlinks and at most 64 MiB each. Selecting files still does nothing until SHARE is tapped; validation does not parse replay contents.
+- When a user manually selects a HYPE replay with Android's document picker, show an additional **ATTACH/CANCEL** confirmation before returning that URI to the site. The existing preselected-macro ATTACH prompt remains, and `.cml`/`.gdr2` still cannot go to HYPE. The website may process a file at attachment; do not promise that its separate Submit is the only transfer point.
+- Retain beta.14's complete removal of the companion XD TOOLS panel and FPS/deaths monitor and all 14 original generated icons. Java/D8 and host tests pass locally; native Android64 CI and device verification **have not** passed for beta.15. No installable beta.15 `.geode` exists yet.
+
+## v1.3.0-beta.14 — remove XD TOOLS and monitor (source candidate)
+- Remove the companion-owned **XD TOOLS** pause-menu button and its panel entirely. Remove its FPS/deaths/last-death HUD, PlayLayer/PauseLayer hooks, and `monitor-start` setting. Keep only the separate **SHARE MACROS** entry beside xdBot's SELECT ALL and the companion picker containing HYPE, GDB, SHARE and EXPORT.
+- No xdBot binary or macros are changed. This is source-only until a new Android64 native CI build and device test confirm the SHARE MACROS entry still appears and the removed panel/HUD do not. The beta.15 investigation above uses the subsequently supplied REA URL.
+
 ## v1.3.0-beta.13 — individually generated arcade-game icon sprites (Android64 source only)
 - Generate **14 distinct original image assets**, one for each HYPE, GDB, PREV, NEXT, ALL, CLEAR, EXPORT, SHARE, GDR, JSON, CML, GDR2, selected and unselected icon. The artwork has bold saturated colours, heavy black outlines and geometric highlights inspired by Geometry Dash menu styling, without copying an existing game sprite. Store full-size originals in `art/source-icons/`; crop their white generator backgrounds into separate transparent 96px RGBA PNG sprites in `resources/icons/`. No vector placeholders or image-edit-derived icons are substituted.
 - Enlarge native action, website and macro-row sprites versus beta.12. Expand the popup from 360×260 to 360×288 game units, space row icons and labels farther apart, and show five rows per page to accommodate larger art without vertical collision. This modifies C++ and **requires a new native Android64 CI build**; beta.12 cannot be relabelled or repacked as beta.13.

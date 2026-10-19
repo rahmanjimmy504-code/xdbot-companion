@@ -23,6 +23,26 @@ Android32 is a **new, unverified target**. Do not infer support from Android64 o
 
 Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
 
+## Beta.16 experimental AI recorder gates — NOT device-verified
+
+1. On a fresh Android64 CI run verify the native source compiles (new PlayLayer/GJBaseGameLayer hooks), metadata is `v1.3.0-beta.16`, 14 icons and WebView DEX remain packaged, and the native binary has `ai-record-experimental` but not `XD TOOLS` or `monitor-start`. A build failure blocks any installation; never relabel beta.13.
+2. Use a disposable copied classic cube level, no valued progress or online account. First confirm the default AI setting is OFF, normal play unaffected, SHARE MACROS/HYPE/GDB and beta.14 XD TOOLS removal still work. Only then enable the setting in Geode's companion settings. Confirm manual input or manual restart stops AI and returns control.
+3. Try a simple level with one jump hazard and a bounded number of retries. First reported completion must **not** create a file. Re-enter the same level; only a matching verified completion may create `companion-ai-*.gdr.json`. On a failed repeat, no candidate file should appear. Test interrupt, unsupported practice/platformer/dual, and max-attempt stop. Exact tick hooks and xdBot hook ordering are not yet validated.
+4. Import the new file in xdBot and replay it on the same disposable level. Record whether it is accepted, exact frame timing, and any failures. Do not claim compatibility, success on arbitrary levels, or upload to HYPE until this test passes. No website or cloud service receives gameplay data automatically.
+
+## Beta.15 Android64 REA-informed safety check (only after fresh native CI)
+
+1. Run the beta.15 CI workflow. Do not install beta.13/beta.14 and call it beta.15. Inspect metadata for `v1.3.0-beta.15`, Android64 ELF with no companion XD TOOLS or `monitor-start` string, regenerated DEX with the manual HYPE confirmation and all 14 icon PNGs.
+2. Open xdBot's Load Macro screen and use **SHARE MACROS**. With disposable `.gdr`, `.gdr.json`, `.cml` and `.gdr2` files, test multi-select SHARE, cancel, local EXPORT, and newly saved macro prompt. With an empty/removed/renamed file selected, SHARE should refuse to open an OS chooser. Never use private macros for testing.
+3. On HYPE's replay upload page, manually choose a disposable `.gdr` or `.json` through Android documents. Check the *second* **Attach chosen replay?** confirmation. CANCEL must not return the file to the website; ATTACH may give it to the website immediately. A preselected macro must still ask before attachment. `.cml` and `.gdr2` remain local-only. No actual account upload is needed to validate the prompt.
+4. Perform the beta.14 removal checks below on the beta.15 native build too. Record redacted screenshots and the actual `.geode` hash; native CI is not a phone test.
+
+## Beta.14 Android64 removal check (only after fresh native CI)
+
+1. Install a genuine beta.14 `.geode` alongside xdBot, replacing beta.13. Open the pause menu: **XD TOOLS must be absent**. Start and play a level: the companion FPS/deaths/last-death HUD must be absent. xdBot's own HUD, if enabled separately, is not this companion's responsibility.
+2. Open xdBot's Load Macro UI. The separate companion-owned **SHARE MACROS** button should still open the picker. Check the five rows, large generated icon sprites, HYPE/GDB, SHARE, local EXPORT, selection and cancellation. Removing the pause fallback means the macro-screen entry is now the only in-game launcher for this picker; a missing entry is a blocking regression.
+3. Test on Android64 first with expendable macros and a redacted screenshot. Android32/Windows/iOS are not port-certified by this run. This removal neither alters nor uninstalls xdBot itself.
+
 ## Beta.13 Android64 generated icon + larger panel check (after new native CI build only)
 
 1. Inspect the actual beta.13 `.geode`: mod version beta.13, newly built Android64 ELF, the WebView DEX, and **14 distinct 96px transparent PNG resources** under `icons/`. Never install the source ZIP or relabel an older native library.

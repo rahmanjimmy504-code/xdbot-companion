@@ -19,6 +19,18 @@ jobs:
             android/java/com/jimmy1234ha/xdbot/HyperbolusRules.java \
             android/tests/HyperbolusRulesTest.java
           java -cp /tmp/hyperbolus-rules-test HyperbolusRulesTest
+      - name: Test sharing, scanning, search and local export preflight
+        shell: bash
+        run: |
+          set -e
+          g++ -std=c++23 -I. tests.cpp src/MacroScanner.cpp -o /tmp/test-scanner && /tmp/test-scanner
+          g++ -std=c++23 -I. tests-search.cpp -o /tmp/test-search && /tmp/test-search
+          g++ -std=c++23 -I. tests-export.cpp src/MacroExportCore.cpp src/MacroScanner.cpp -o /tmp/test-export && /tmp/test-export
+          g++ -std=c++23 -I. tests-share.cpp src/ShareMacros.cpp src/MacroExportCore.cpp src/MacroScanner.cpp -o /tmp/test-share && /tmp/test-share
+          g++ -std=c++23 -I. tests-ai-search.cpp src/ai/AiMacroSearch.cpp -o /tmp/test-ai-core && /tmp/test-ai-core
+          g++ -std=c++23 -I. tests-ai-replay.cpp src/ai/AiReplayJson.cpp -o /tmp/test-ai-json
+          /tmp/test-ai-json > /tmp/test-ai.json
+          python3 -c 'import json; r=json.load(open("/tmp/test-ai.json")); assert len(r["inputs"]) == 4 and r["level"]["id"] == 12345'
       - name: Compile Android WebView class into app-private dex resource
         shell: bash
         run: bash scripts/build-hyperbolus-bridge.sh
@@ -43,8 +55,14 @@ jobs:
               names = archive.namelist()
               meta = json.loads(archive.read('mod.json'))
               assert meta['id'] == 'jimmy_1234ha.xdbot-companion'
-              assert meta['version'] == 'v1.3.0-beta.13'
-              assert any(name.endswith('android64.so') for name in names), names
+              assert meta['version'] == 'v1.3.0-beta.16'
+              assert 'monitor-start' not in meta.get('settings', {})
+              assert meta['settings']['ai-record-experimental']['default'] is False
+              native = [name for name in names if name.endswith('android64.so')]
+              assert len(native) == 1, names
+              assert b'XD TOOLS' not in archive.read(native[0]), 'Old pause-menu label still embedded'
+              assert b'monitor-start' not in archive.read(native[0]), 'Old monitor setting still referenced'
+              assert b'ai-record-experimental' in archive.read(native[0]), 'Experimental AI backend not linked'
               dex_paths = [name for name in names if name.endswith('hyperbolus-bridge.dex')]
               assert len(dex_paths) == 1, names
               dex = archive.read(dex_paths[0])
@@ -52,6 +70,7 @@ jobs:
               assert b'DocumentFragment' in dex, 'Document picker receiver not packaged'
               assert b'androidx/activity/result' not in dex
               assert b'openGDB' in dex and b'gdbrowser.com' in dex
+              assert b'Attach chosen replay?' in dex and b'Only this file will be offered to Hyperbolus.' in dex, 'Manual-upload confirmation missing'
               icons = [name for name in names if '/icons/' in name and name.endswith('.png')]
               assert len(icons) == 14, names  # Show archive entries if resource packaging changes.
               assert {pathlib.Path(name).stem for name in icons} == {'hype','gdb','prev','next','all','clear','export','share','gdr','json','cml','gdr2','selected','unselected'}, names
@@ -59,11 +78,11 @@ jobs:
               assert all(archive.read(name)[16:24] == bytes.fromhex('0000006000000060') for name in icons), 'Icon dimensions must be 96 x 96'
               assert all(archive.read(name)[25] == 6 for name in icons), 'Sprites must be RGBA with transparency'
               assert len({hashlib.sha256(archive.read(name)).digest() for name in icons}) == 14, 'Duplicate icon image'
-              print('Android64 native binary, two website views, and 14 distinct 96px icon sprites packaged; runtime not tested.')
+              print('Android64 native binary without XD TOOLS/monitor, two website views, 14 icon sprites packaged; runtime not tested.')
           PY
       - name: Upload Android-only candidate — do not release
         uses: actions/upload-artifact@v4
         with:
-          name: DEV-HYPE-GDB-ANDROID64-beta.13-UNREVIEWED
+          name: DEV-HYPE-GDB-AI-ANDROID64-beta.16-UNREVIEWED
           path: ${{ steps.build.outputs.build-output }}
           if-no-files-found: error

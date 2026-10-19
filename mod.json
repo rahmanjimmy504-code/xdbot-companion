@@ -5,9 +5,9 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.13",
+  "version": "v1.3.0-beta.16",
   "developer": "Jimmy_1234ha",
-  "description": "Android64 beta.13 source candidate: 14 separately generated colourful rhythm-game icon sprites; larger companion buttons and macro rows; GDBrowser and Hyperbolus views; device tests required.",
+  "description": "Android64 experimental AI macro recording source: bounded local classic-level attempts; repeat-run verification and local GDR JSON candidate. No XD TOOLS or monitor. Native and phone tests pending.",
   "settings": {
     "share-after-save": {
       "type": "bool",
@@ -15,10 +15,10 @@
       "description": "After a new xdBot macro file finishes saving, ask whether to open the native sharing UI. No file is sent automatically.",
       "default": true
     },
-    "monitor-start": {
+    "ai-record-experimental": {
       "type": "bool",
-      "name": "Show minimal monitor at level start",
-      "description": "Display a small FPS, deaths and last-death overlay; can also be toggled in the pause menu.",
+      "name": "Experimental AI macro attempt (next level)",
+      "description": "OFF by default. Try bounded single-button classic-level attempts on Android. After a completion, re-enter the same level for a verification replay; a candidate .gdr.json is saved locally only if both runs match. It may fail, and xdBot import is not yet verified. Manual input or disabling this setting cancels AI. No website upload.",
       "default": false
     }
   },
