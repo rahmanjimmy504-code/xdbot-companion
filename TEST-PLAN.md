@@ -23,9 +23,11 @@ Android32 is a **new, unverified target**. Do not infer support from Android64 o
 
 Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
 
-## Beta.16 experimental AI recorder gates — NOT device-verified
+## Beta.17 experimental AI recorder gates — NOT device-verified
 
-1. On a fresh Android64 CI run verify the native source compiles (new PlayLayer/GJBaseGameLayer hooks), metadata is `v1.3.0-beta.16`, 14 icons and WebView DEX remain packaged, and the native binary has `ai-record-experimental` but not `XD TOOLS` or `monitor-start`. A build failure blocks any installation; never relabel beta.13.
+Beta.16 CI run 39306690163 failed on missing generated Geode modify headers; beta.17 adds them. This is a compile correction, not a verified Android AI player.
+
+1. On a fresh Android64 CI run verify the native source compiles (new PlayLayer/GJBaseGameLayer hooks), metadata is `v1.3.0-beta.17`, 14 icons and WebView DEX remain packaged, and the native binary has `ai-record-experimental` but not `XD TOOLS` or `monitor-start`. A build failure blocks any installation; never relabel beta.13.
 2. Use a disposable copied classic cube level, no valued progress or online account. First confirm the default AI setting is OFF, normal play unaffected, SHARE MACROS/HYPE/GDB and beta.14 XD TOOLS removal still work. Only then enable the setting in Geode's companion settings. Confirm manual input or manual restart stops AI and returns control.
 3. Try a simple level with one jump hazard and a bounded number of retries. First reported completion must **not** create a file. Re-enter the same level; only a matching verified completion may create `companion-ai-*.gdr.json`. On a failed repeat, no candidate file should appear. Test interrupt, unsupported practice/platformer/dual, and max-attempt stop. Exact tick hooks and xdBot hook ordering are not yet validated.
 4. Import the new file in xdBot and replay it on the same disposable level. Record whether it is accepted, exact frame timing, and any failures. Do not claim compatibility, success on arbitrary levels, or upload to HYPE until this test passes. No website or cloud service receives gameplay data automatically.

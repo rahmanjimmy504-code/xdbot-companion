@@ -55,7 +55,7 @@ jobs:
               names = archive.namelist()
               meta = json.loads(archive.read('mod.json'))
               assert meta['id'] == 'jimmy_1234ha.xdbot-companion'
-              assert meta['version'] == 'v1.3.0-beta.16'
+              assert meta['version'] == 'v1.3.0-beta.17'
               assert 'monitor-start' not in meta.get('settings', {})
               assert meta['settings']['ai-record-experimental']['default'] is False
               native = [name for name in names if name.endswith('android64.so')]
@@ -83,6 +83,6 @@ jobs:
       - name: Upload Android-only candidate — do not release
         uses: actions/upload-artifact@v4
         with:
-          name: DEV-HYPE-GDB-AI-ANDROID64-beta.16-UNREVIEWED
+          name: DEV-HYPE-GDB-AI-ANDROID64-beta.17-UNREVIEWED
           path: ${{ steps.build.outputs.build-output }}
           if-no-files-found: error

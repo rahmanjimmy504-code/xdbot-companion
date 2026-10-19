@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.0-beta.17 — AI hook compile-header correction (source only)
+- Add the required generated Geode `PlayLayer` and `GJBaseGameLayer` modify headers to the Android AI gameplay file. The previous beta.16 GitHub Actions run 39306690163 failed at `ModifyDerive` static assertions because these headers were missing. Do not assume the full native build or runtime succeeds until a new CI run and device tests pass. AI behavior and removed XD TOOLS/monitor are otherwise unchanged.
+
 ## v1.3.0-beta.16 — experimental AI macro attempt source (NO NATIVE BUILD)
 - Combine all beta.15 independent companion features with an OFF-by-default Android gameplay experiment. A bounded local timing search proposes player-1 jump presses after failures, then asks the user to re-enter the same level for an exact repeat run. Only after two matching reported completions is a **local `.gdr.json` compatibility candidate** written to xdBot's configured macro folder. No auto upload or cloud API.
 - Reject practice, platformer and dual modes; manual input, manual restart, the setting toggle and an attempt limit can cancel. This is not a general vision/ML agent; it may never finish a level. Game hooks, replay timing and xdBot import are untested. See `AI-RECORD-ANDROID64-STATUS.md` and do **not** release as a working AI mod.

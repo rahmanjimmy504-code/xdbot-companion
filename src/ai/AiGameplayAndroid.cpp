@@ -2,6 +2,8 @@
 #include "AiReplayJson.hpp"
 #ifdef GEODE_IS_ANDROID
 #include <Geode/Geode.hpp>
+#include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/loader/Dirs.hpp>
 #include <Geode/ui/Popup.hpp>
 #include <algorithm>

@@ -5,9 +5,9 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.16",
+  "version": "v1.3.0-beta.17",
   "developer": "Jimmy_1234ha",
-  "description": "Android64 experimental AI macro recording source: bounded local classic-level attempts; repeat-run verification and local GDR JSON candidate. No XD TOOLS or monitor. Native and phone tests pending.",
+  "description": "Android64 beta.17 experimental AI macro recording source: add required Geode modify headers; native and device tests pending. XD TOOLS and monitor remain removed.",
   "settings": {
     "share-after-save": {
       "type": "bool",
