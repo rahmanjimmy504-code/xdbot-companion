@@ -56,7 +56,7 @@ jobs:
               names = archive.namelist()
               meta = json.loads(archive.read('mod.json'))
               assert meta['id'] == 'jimmy_1234ha.xdbot-companion'
-              assert meta['version'] == 'v1.3.0-beta.18'
+              assert meta['version'] == 'v1.3.0-beta.19'
               assert 'monitor-start' not in meta.get('settings', {})
               assert meta['settings']['ai-record-experimental']['default'] is False
               native = [name for name in names if name.endswith('android64.so')]
@@ -64,9 +64,9 @@ jobs:
               assert b'XD TOOLS' not in archive.read(native[0]), 'Old pause-menu label still embedded'
               assert b'monitor-start' not in archive.read(native[0]), 'Old monitor setting still referenced'
               assert b'ai-record-experimental' in archive.read(native[0]), 'Experimental AI backend not linked'
-              assert b'jimmy_1234ha.xdbot-companion/ai-start' in archive.read(native[0]), 'START AI button missing'
-              assert b'jimmy_1234ha.xdbot-companion/ai-stop' in archive.read(native[0]), 'STOP AI button missing'
-              assert b'jimmy_1234ha.xdbot-companion/ai-verify' in archive.read(native[0]), 'VERIFY AI button missing'
+              assert b'jimmy_1234ha.xdbot-companion/pause-ai-menu' in archive.read(native[0]), 'Pause-menu AI button missing'
+              assert b'START AI' in archive.read(native[0]) and b'STOP AI' in archive.read(native[0]), 'AI control labels missing'
+              assert b'XD TOOLS' not in archive.read(native[0]), 'Removed XD TOOLS panel returned'
               dex_paths = [name for name in names if name.endswith('hyperbolus-bridge.dex')]
               assert len(dex_paths) == 1, names
               dex = archive.read(dex_paths[0])
@@ -87,6 +87,6 @@ jobs:
       - name: Upload Android-only candidate — do not release
         uses: actions/upload-artifact@v4
         with:
-          name: DEV-HYPE-GDB-AI-ANDROID64-beta.18-UNREVIEWED
+          name: DEV-HYPE-GDB-AI-ANDROID64-beta.19-UNREVIEWED
           path: ${{ steps.build.outputs.build-output }}
           if-no-files-found: error

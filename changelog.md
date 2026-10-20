@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.0-beta.19 — move AI control to pause and diagnose start (source only)
+- Beta.18 passed Android64 CI at run 39454823825. The on-screen START AI button appeared and opened a generic "AI could not start" popup on the user's device. The exact failure branch is unknown because beta.18 combined several checks. Its `layer != play` guard would also reject a restart after a cancelled attempt.
+- Move the standalone START/STOP/VERIFY AI control into the Pause menu (do not restore the removed XD TOOLS panel or FPS/deaths monitor). Tap START AI, confirm, then RESUME; only then reset the current level and start the bounded heuristic. Rebind a stale session safely; display distinct errors for missing xdBot, changed level, unsupported modes, failed reset and failed search. Quit/restart cancels an armed attempt.
+- No AI injection on level entry, automatic website upload, or arbitrary-level solver. The Geode preference remains OFF by default; cancelled attempts no longer silently change it. Beta.19 native CI, pause-menu layout, touch behavior and xdBot import/replay are still unverified.
+
+
 ## v1.3.0-beta.18 — explicit in-level AI start/stop/verify (source only)
 - Beta.17 built in run 39308059206, but its setting silently auto-started on level entry, switched itself OFF on input/restart/quit, and exposed no button. Beta.18 creates a compact START AI / STOP AI / VERIFY AI control in the gameplay UI, separate from the removed XD TOOLS panel. Confirm before starting, reset the current level, then run the bounded local timing heuristic. Entering a level alone does nothing.
 - The Geode preference defaults OFF; confirming START AI enables it. Manual gameplay or restart, STOP AI, quitting and completion cancel the current attempt without secretly toggling that preference. Turning the preference OFF explicitly cancels AI. Verification still requires a second matching reported completion and xdBot import/replay remains unverified. No automatic website upload. Native beta.18 CI and phone test pending.

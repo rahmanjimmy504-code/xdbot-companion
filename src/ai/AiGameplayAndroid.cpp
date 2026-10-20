@@ -3,6 +3,7 @@
 #ifdef GEODE_IS_ANDROID
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/loader/Dirs.hpp>
 #include <Geode/ui/Popup.hpp>
@@ -32,6 +33,7 @@ struct Session {
     std::string levelName;
     bool injecting = false;
     bool resettingForStart = false;
+    bool pendingStart = false;
     bool held = false;
     bool deathReported = false;
     bool verifying = false;
@@ -54,7 +56,7 @@ struct Session {
         search.reset();
         plan.clear(); firstRun.clear(); observed.clear();
         nextEvent = 0; lastTick = std::numeric_limits<unsigned>::max();
-        deathReported = false; verifying = false;
+        deathReported = false; verifying = false; pendingStart = false;
     }
     void startAttempt() {
         if (!search || !search->beginAttempt()) { stop(); return; }
@@ -77,39 +79,57 @@ struct Session {
         }
         layer = play;
     }
-    // The on-screen button is the ONLY way to arm input injection. Starting
-    // mid-level resets to frame zero before constructing any replay plan.
-    bool startFor(PlayLayer* play) {
-        if (layer != play || active() || !play->m_level ||
-            play->m_isPracticeMode || play->m_isPlatformer ||
-            play->m_gameState.m_isDualMode) return false;
+    // The PAUSE-menu button arms a run; Resume starts it. Rebind a current
+    // PlayLayer even after a previous stop() cleared the session pointer.
+    // Beta.18's layer != play guard rejected all subsequent starts after a
+    // cancellation and returned the generic popup seen on the user's tablet.
+    std::string startFor(PlayLayer* play) {
+        if (!play || PlayLayer::get() != play || !play->m_level)
+            return "The level changed before the AI could start. Nothing was saved.";
+        if (active()) return "An AI attempt is already running.";
+        if (play->m_isPracticeMode) return "Practice mode is unsupported. Switch to normal mode.";
+        if (play->m_isPlatformer) return "Platformer mode is unsupported.";
+        if (play->m_gameState.m_isDualMode) return "Dual mode is unsupported.";
         auto* xdbot = Loader::get()->getInstalledMod("zilko.xdbot");
-        if (!xdbot || !xdbot->isLoaded()) return false;
+        if (!xdbot || !xdbot->isLoaded())
+            return "xdBot (zilko.xdbot) is not loaded. Check Geode's mod list.";
         bool verify = search && search->phase() == ai_macro::Phase::VerifyReady &&
             play->m_level->m_levelID.value() == levelID &&
             std::string(play->m_level->m_levelName.c_str()) == levelName;
-        // A deliberate reset is not a manual-restart kill switch. Keep the
-        // search inactive until resetLevel and its input-release hooks finish.
+        if (!verify) {
+            stop();
+            layer = play;
+            levelID = play->m_level->m_levelID.value();
+            levelName = play->m_level->m_levelName.c_str();
+        } else {
+            layer = play;
+        }
+        // Deliberate reset from the Pause-layer Resume path is not a manual
+        // restart. Initialize the AI plan only after the base reset finishes.
         resettingForStart = true;
         play->resetLevel();
         resettingForStart = false;
+        if (PlayLayer::get() != play || !play->m_level) {
+            stop();
+            return "The level ended during reset; no AI attempt was started.";
+        }
         layer = play;
         if (verify) {
-            if (!search->beginVerification()) { stop(); return false; }
+            if (!search || !search->beginVerification()) {
+                stop();
+                return "The saved in-memory candidate cannot be verified; start a new attempt.";
+            }
             verifying = true;
             plan = search->plannedEvents();
             observed.clear(); nextEvent = 0;
             lastTick = std::numeric_limits<unsigned>::max();
             deathReported = false; held = false;
         } else {
-            stop();
-            layer = play;
-            levelID = play->m_level->m_levelID.value();
-            levelName = play->m_level->m_levelName.c_str();
             search = std::make_unique<ai_macro::Search>(80, 240 * 600);
             startAttempt();
         }
-        return active();
+        if (!active()) return "The timing search could not begin; nothing was saved.";
+        return {};
     }
     void tick(GJBaseGameLayer* game) {
         if (game != layer || !active()) return;
@@ -206,95 +226,13 @@ struct Session {
     }
 };
 Session g_ai;
-constexpr char const* kMenuID = "jimmy_1234ha.xdbot-companion/ai-button";
-constexpr char const* kStartID = "jimmy_1234ha.xdbot-companion/ai-start";
-constexpr char const* kStopID = "jimmy_1234ha.xdbot-companion/ai-stop";
-constexpr char const* kVerifyID = "jimmy_1234ha.xdbot-companion/ai-verify";
-void syncButton(PlayLayer* play) {
-    if (!play || !play->m_uiLayer) return;
-    auto* menu = play->m_uiLayer->getChildByID(kMenuID);
-    if (!menu) return;
-    bool running = g_ai.active();
-    bool verify = !running && g_ai.search &&
-        g_ai.search->phase() == ai_macro::Phase::VerifyReady;
-    if (auto* start = menu->getChildByID(kStartID)) start->setVisible(!running && !verify);
-    if (auto* stop = menu->getChildByID(kStopID)) stop->setVisible(running);
-    if (auto* next = menu->getChildByID(kVerifyID)) next->setVisible(verify);
-}
+constexpr char const* kMenuID = "jimmy_1234ha.xdbot-companion/pause-ai-menu";
 } // namespace
 
 class $modify(CompanionAIGame, PlayLayer) {
-    void onAiControl(cocos2d::CCObject*) {
-        if (g_ai.active()) {
-            g_ai.stop();
-            syncButton(this);
-            geode::createQuickPopup("AI stopped", "The AI attempt was cancelled. Nothing was uploaded.",
-                "OK", nullptr, [](auto*, bool) {});
-            return;
-        }
-        if (!m_level || m_isPracticeMode || m_isPlatformer || m_gameState.m_isDualMode) {
-            geode::createQuickPopup("AI unavailable", "Use a disposable normal-mode classic cube level. Practice, dual and platformer are not supported.",
-                "OK", nullptr, [](auto*, bool) {});
-            return;
-        }
-        auto* xdbot = Loader::get()->getInstalledMod("zilko.xdbot");
-        if (!xdbot || !xdbot->isLoaded()) {
-            geode::createQuickPopup("AI unavailable", "xdBot must be installed and loaded to save a candidate macro.",
-                "OK", nullptr, [](auto*, bool) {});
-            return;
-        }
-        bool verify = g_ai.search && g_ai.search->phase() == ai_macro::Phase::VerifyReady;
-        std::string prompt = verify
-            ? "Replay the candidate on this level to verify it? Nothing will be uploaded."
-            : "Reset this level and let experimental AI try up to 80 times? It is a limited jump-timing heuristic, not an any-level solver. Nothing will be uploaded.";
-        geode::createQuickPopup(verify ? "VERIFY AI" : "START AI", prompt,
-            "Cancel", verify ? "Verify" : "Start", [this](auto*, bool confirmed) {
-                if (!confirmed || PlayLayer::get() != this || !m_level) return;
-                Mod::get()->setSettingValue<bool>(kEnabled, true); // preference; never auto-clear it
-                if (!g_ai.startFor(this)) {
-                    geode::createQuickPopup("AI could not start", "Check that xdBot is loaded and this is a supported normal-mode level.",
-                        "OK", nullptr, [](auto*, bool) {});
-                }
-                syncButton(this);
-            });
-    }
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
         if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
         g_ai.enter(this);
-        if (m_uiLayer) {
-            auto* menu = cocos2d::CCMenu::create();
-            if (menu) {
-                menu->setID(kMenuID);
-                menu->setPosition({0.f, 0.f});
-                auto makeButton = [this](char const* text, char const* id) {
-                    auto* body = cocos2d::CCLayerColor::create({30, 18, 8, 230}, 106.f, 31.f);
-                    auto* label = cocos2d::CCLabelBMFont::create(text, "goldFont.fnt");
-                    if (!body || !label) return static_cast<CCMenuItemSpriteExtra*>(nullptr);
-                    body->ignoreAnchorPointForPosition(false);
-                    label->setScale(.37f);
-                    label->setPosition({53.f, 15.5f});
-                    body->addChild(label);
-                    auto* item = CCMenuItemSpriteExtra::create(body, this,
-                        menu_selector(CompanionAIGame::onAiControl));
-                    if (item) item->setID(id);
-                    return item;
-                };
-                auto* start = makeButton("START AI", kStartID);
-                auto* stop = makeButton("STOP AI", kStopID);
-                auto* verify = makeButton("VERIFY AI", kVerifyID);
-                if (start && stop && verify) {
-                    auto height = cocos2d::CCDirector::get()->getWinSize().height;
-                    start->setPosition({67.f, height - 61.f});
-                    stop->setPosition({67.f, height - 61.f});
-                    verify->setPosition({67.f, height - 61.f});
-                    menu->addChild(start);
-                    menu->addChild(stop);
-                    menu->addChild(verify);
-                    m_uiLayer->addChild(menu, 1000);
-                    syncButton(this);
-                }
-            }
-        }
         return true;
     }
     void resetLevel() {
@@ -306,19 +244,17 @@ class $modify(CompanionAIGame, PlayLayer) {
         PlayLayer::resetLevel();
         if (g_ai.layer == this && died && g_ai.search &&
             g_ai.search->phase() == ai_macro::Phase::Ready) g_ai.startAttempt();
-        syncButton(this);
     }
     void destroyPlayer(PlayerObject* player, GameObject* object) {
         if (player == m_player1) g_ai.died(this);
         PlayLayer::destroyPlayer(player, object);
-        syncButton(this);
     }
     void levelComplete() {
         g_ai.completed(this);
         PlayLayer::levelComplete();
-        syncButton(this);
     }
     void onQuit() {
+        g_ai.pendingStart = false;
         if (g_ai.layer == this) {
             if (g_ai.search && g_ai.search->phase() == ai_macro::Phase::VerifyReady)
                 g_ai.layer = nullptr;
@@ -327,6 +263,7 @@ class $modify(CompanionAIGame, PlayLayer) {
         PlayLayer::onQuit();
     }
     void onExit() {
+        g_ai.pendingStart = false;
         if (g_ai.layer == this) {
             if (g_ai.search && g_ai.search->phase() == ai_macro::Phase::VerifyReady)
                 g_ai.layer = nullptr;
@@ -336,13 +273,110 @@ class $modify(CompanionAIGame, PlayLayer) {
     }
 };
 
+// A standalone pause-menu action, not the removed XD TOOLS panel or a HUD.
+// No AI gameplay is injected until the player explicitly arms and Resumes.
+class $modify(CompanionAIPauseControl, PauseLayer) {
+    void onAIButton(cocos2d::CCObject*) {
+        auto* play = PlayLayer::get();
+        if (!play || !play->m_level) {
+            geode::createQuickPopup("AI unavailable", "There is no active level.",
+                "OK", nullptr, [](auto*, bool) {});
+            return;
+        }
+        if (g_ai.active()) {
+            g_ai.stop();
+            geode::createQuickPopup("AI stopped", "Attempt cancelled. Nothing was uploaded.",
+                "OK", nullptr, [](auto*, bool) {});
+            return;
+        }
+        if (g_ai.pendingStart) {
+            g_ai.pendingStart = false;
+            geode::createQuickPopup("AI disarmed", "The pending attempt will not start on Resume.",
+                "OK", nullptr, [](auto*, bool) {});
+            return;
+        }
+        if (play->m_isPracticeMode || play->m_isPlatformer || play->m_gameState.m_isDualMode) {
+            geode::createQuickPopup("AI unavailable", "Use a disposable normal-mode classic cube level. Practice, dual and platformer are unsupported.",
+                "OK", nullptr, [](auto*, bool) {});
+            return;
+        }
+        auto* xdbot = Loader::get()->getInstalledMod("zilko.xdbot");
+        if (!xdbot || !xdbot->isLoaded()) {
+            geode::createQuickPopup("AI unavailable", "xdBot (zilko.xdbot) is not loaded in Geode.",
+                "OK", nullptr, [](auto*, bool) {});
+            return;
+        }
+        bool verify = g_ai.search && g_ai.search->phase() == ai_macro::Phase::VerifyReady &&
+            play->m_level->m_levelID.value() == g_ai.levelID &&
+            std::string(play->m_level->m_levelName.c_str()) == g_ai.levelName;
+        std::string prompt = verify
+            ? "Verify the candidate on this level? Confirm, then tap RESUME. It will reset from the beginning. Nothing is uploaded."
+            : "Experimental timing heuristic: up to 80 jump attempts, not an any-level solver. Confirm, then tap RESUME to reset and start this level. Nothing is uploaded.";
+        geode::createQuickPopup(verify ? "VERIFY AI" : "START AI", std::move(prompt),
+            "Cancel", "Arm AI", [play](auto*, bool confirmed) {
+                if (!confirmed || PlayLayer::get() != play || !play->m_level) return;
+                Mod::get()->setSettingValue<bool>(kEnabled, true);
+                g_ai.pendingStart = true;
+            });
+    }
+    void customSetup() {
+        PauseLayer::customSetup();
+        if (!PlayLayer::get()) return;
+        auto* menu = cocos2d::CCMenu::create();
+        if (!menu) return;
+        menu->setID(kMenuID);
+        menu->setPosition({0.f, 0.f});
+        char const* text = g_ai.active() ? "STOP AI" :
+            g_ai.pendingStart ? "DISARM AI" :
+            (g_ai.search && g_ai.search->phase() == ai_macro::Phase::VerifyReady)
+                ? "VERIFY AI" : "START AI";
+        auto* body = cocos2d::CCLayerColor::create({42, 25, 12, 235}, 120.f, 32.f);
+        auto* label = cocos2d::CCLabelBMFont::create(text, "goldFont.fnt");
+        if (!body || !label) return;
+        body->ignoreAnchorPointForPosition(false);
+        label->setScale(.4f);
+        label->setPosition({60.f, 16.f});
+        body->addChild(label);
+        auto* button = CCMenuItemSpriteExtra::create(body, this,
+            menu_selector(CompanionAIPauseControl::onAIButton));
+        if (!button) return;
+        auto size = cocos2d::CCDirector::get()->getWinSize();
+        button->setPosition({78.f, size.height - 51.f});
+        menu->addChild(button);
+        addChild(menu, 2000);
+    }
+    void onResume(cocos2d::CCObject* sender) {
+        bool armed = g_ai.pendingStart;
+        g_ai.pendingStart = false;
+        auto* play = PlayLayer::get();
+        PauseLayer::onResume(sender);
+        if (!armed) return;
+        auto error = g_ai.startFor(play);
+        if (!error.empty()) {
+            geode::queueInMainThread([message = std::move(error)] {
+                geode::createQuickPopup("AI could not start", message, "OK", nullptr,
+                    [](auto*, bool) {});
+            });
+        }
+    }
+    void onRestart(cocos2d::CCObject* sender) {
+        g_ai.pendingStart = false;
+        PauseLayer::onRestart(sender);
+    }
+    void onRestartFull(cocos2d::CCObject* sender) {
+        g_ai.pendingStart = false;
+        PauseLayer::onRestartFull(sender);
+    }
+    void onQuit(cocos2d::CCObject* sender) {
+        g_ai.pendingStart = false;
+        PauseLayer::onQuit(sender);
+    }
+};
+
 class $modify(CompanionAITick, GJBaseGameLayer) {
     void processCommands(float dt, bool isHalfTick, bool isLastTick) {
         g_ai.tick(this);
         GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
-        if (auto* play = PlayLayer::get(); play &&
-            static_cast<GJBaseGameLayer*>(play) ==
-            static_cast<GJBaseGameLayer*>(this)) syncButton(play);
     }
 };
 

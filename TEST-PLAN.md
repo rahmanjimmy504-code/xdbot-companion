@@ -23,6 +23,15 @@ Android32 is a **new, unverified target**. Do not infer support from Android64 o
 
 Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
 
+## Beta.19 AI Pause-menu control — native and phone checks pending
+
+Beta.18 compiled but the user's screenshot proves that an in-level START AI tap produced a generic failure. Beta.19 is a fresh native build, not a renamed beta.18 binary. The exact cause of that beta.18 failure is not known; beta.19 reports distinct failures.
+
+1. In Android64 CI verify beta.19 metadata, a native PauseLayer hook with the required Geode modify header, 14 icons, WebView DEX and absence of the old XD TOOLS/monitor. The beta.19 APK/.geode must come from this CI, not a source ZIP or older native package.
+2. On a disposable normal-mode classic cube level, confirm **no AI overlay on gameplay**. Press Pause; a standalone START AI control should appear without obscuring RESUME or the standard buttons and without bringing back XD TOOLS or the FPS/deaths HUD. Tap Cancel: no AI. Confirm START AI: do not expect it to move the cube until tapping RESUME. Then verify the level resets to the beginning and AI proceeds, or record the **exact new error**. A human jump input or STOP AI in Pause should cancel this run, not silently switch off the preference.
+3. Check Practice/Dual/Platformer refusal and missing xdBot message where safely testable. Test quitting/restarting after arming without RESUME: no unexpected future run. Test starting again after cancelling an attempt: no stale-layer rejection. Confirm SHARE MACROS, HYPE/GDB and existing macro flow are unchanged.
+4. Only then try a one-spike local level. First completion saves nothing; re-enter, Pause and VERIFY AI, Resume; only matching input and completion timing may save a `.gdr.json` candidate. Test xdBot import/replay separately. No claim to solve arbitrary levels or to automatically upload any macro.
+
 ## Beta.18 AI control regression — native and device tests pending
 
 Beta.17 built in run 39308059206 but on device the user reported no AI button and the setting switched itself OFF. Beta.18 must receive a NEW Android64 CI build; its host-only source test does not prove a touch control works.

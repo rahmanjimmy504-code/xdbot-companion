@@ -5,9 +5,9 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.18",
+  "version": "v1.3.0-beta.19",
   "developer": "Jimmy_1234ha",
-  "description": "Android64 beta.18 experimental AI button/control correction; native and device tests pending. XD TOOLS and monitor remain removed.",
+  "description": "Android64 beta.19 AI pause-menu control and precise start diagnostics; native and device tests pending. XD TOOLS and monitor remain removed.",
   "settings": {
     "share-after-save": {
       "type": "bool",
@@ -17,8 +17,8 @@
     },
     "ai-record-experimental": {
       "type": "bool",
-      "name": "Allow experimental AI via START AI button",
-      "description": "OFF by default. Entering a level never starts AI. Tap START AI in the level, read the warning and confirm to enable and begin; STOP AI, manual input, restart and quitting cancel only the current run without silently changing this preference. Turn this OFF to cancel and disallow AI. Local bounded classic-level timing heuristic only; xdBot replay unverified.",
+      "name": "Allow experimental AI via pause-menu control",
+      "description": "OFF by default. Pause a disposable normal-mode classic level; tap START AI, confirm, then tap RESUME to reset and begin. STOP AI in the pause menu, manual input or restart cancels this attempt without toggling the preference. Explicitly turning the preference OFF cancels AI. Limited local jump-timing heuristic only; xdBot import/replay unverified.",
       "default": false
     }
   },
