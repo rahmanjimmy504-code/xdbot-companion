@@ -23,6 +23,15 @@ Android32 is a **new, unverified target**. Do not infer support from Android64 o
 
 Search for old and new macro filenames with differing capitalization; verify results update, no-results state is safe, paging matches the filtered list, page ALL selects only visible entries, and selections made in one query remain selected after changing or clearing the query. The status must show the total selected count even if some selections are hidden by a query. Confirm neither typing nor selecting uploads or shares files; the user must explicitly tap a share action. There is no Hyperbolus upload in beta.3.
 
+## Beta.18 AI control regression — native and device tests pending
+
+Beta.17 built in run 39308059206 but on device the user reported no AI button and the setting switched itself OFF. Beta.18 must receive a NEW Android64 CI build; its host-only source test does not prove a touch control works.
+
+1. Confirm the beta.18 metadata, Android64 ELF, 14 icons and WebView DEX in the **new** artifact. CI checks that the native binary has START AI, STOP AI and VERIFY AI control IDs, the preference defaults OFF, and the old XD TOOLS/monitor strings are absent. Never relabel beta.17.
+2. On a disposable classic cube level, check that START AI is visible and tappable without covering the game's pause or jump controls. Entering the level, ordinary taps and exiting must NOT silently change the preference or start AI. With the setting OFF, tapping START AI must show a consent dialog; Cancel must not start. Confirm must reset the current level to the beginning and show STOP AI. If it doesn't, report the exact step and screenshot; don't assume the AI is running.
+3. Tap STOP AI and verify user control returns; a manual jump or restart also cancels only the active run. No auto upload. Try unsupported practice/dual/platformer: no AI input should begin. Recheck the Geode setting: it should stay ON after cancellation, and manually switching it OFF should cancel a running attempt.
+4. Only after the control passes, test the bounded one-spike search. First completion must save nothing; re-enter and tap VERIFY AI; only a matching replay may write a candidate file. Test xdBot import/replay separately. No claim about arbitrary levels or a trained AI.
+
 ## Beta.17 experimental AI recorder gates — NOT device-verified
 
 Beta.16 CI run 39306690163 failed on missing generated Geode modify headers; beta.17 adds them. This is a compile correction, not a verified Android AI player.

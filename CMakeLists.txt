@@ -20,8 +20,8 @@ elseif(GEODE_TARGET_PLATFORM STREQUAL "iOS")
 else()
     message(FATAL_ERROR "Only Android32, Android64, Win64 and iOS are in scope")
 endif()
-# Experimental AI search core compiles with the companion, but has no gameplay
-# adapter or in-game control yet. Do not advertise it as autonomous play.
+# Experimental local AI heuristic has an explicit Android in-level button, but
+# native beta.18 CI and device behavior are unverified; not a general solver.
 add_library(${PROJECT_NAME} SHARED src/main.cpp src/MacroScanner.cpp src/ShareMacros.cpp src/MacroExportCore.cpp src/MacroPicker.cpp src/ai/AiMacroSearch.cpp src/ai/AiReplayJson.cpp ${AI_BACKEND} ${EXPORT_BACKEND} ${SHARE_BACKEND} ${HYPERBOLUS_BACKEND})
 if(GEODE_TARGET_PLATFORM STREQUAL "Win64")
     target_link_libraries(${PROJECT_NAME} windowsapp)

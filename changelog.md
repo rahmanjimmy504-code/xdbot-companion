@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0-beta.18 — explicit in-level AI start/stop/verify (source only)
+- Beta.17 built in run 39308059206, but its setting silently auto-started on level entry, switched itself OFF on input/restart/quit, and exposed no button. Beta.18 creates a compact START AI / STOP AI / VERIFY AI control in the gameplay UI, separate from the removed XD TOOLS panel. Confirm before starting, reset the current level, then run the bounded local timing heuristic. Entering a level alone does nothing.
+- The Geode preference defaults OFF; confirming START AI enables it. Manual gameplay or restart, STOP AI, quitting and completion cancel the current attempt without secretly toggling that preference. Turning the preference OFF explicitly cancels AI. Verification still requires a second matching reported completion and xdBot import/replay remains unverified. No automatic website upload. Native beta.18 CI and phone test pending.
+
 ## v1.3.0-beta.17 — AI hook compile-header correction (source only)
 - Add the required generated Geode `PlayLayer` and `GJBaseGameLayer` modify headers to the Android AI gameplay file. The previous beta.16 GitHub Actions run 39306690163 failed at `ModifyDerive` static assertions because these headers were missing. Do not assume the full native build or runtime succeeds until a new CI run and device tests pass. AI behavior and removed XD TOOLS/monitor are otherwise unchanged.
 

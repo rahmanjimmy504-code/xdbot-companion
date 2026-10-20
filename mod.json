@@ -5,9 +5,9 @@
   },
   "id": "jimmy_1234ha.xdbot-companion",
   "name": "xdBot Companion",
-  "version": "v1.3.0-beta.17",
+  "version": "v1.3.0-beta.18",
   "developer": "Jimmy_1234ha",
-  "description": "Android64 beta.17 experimental AI macro recording source: add required Geode modify headers; native and device tests pending. XD TOOLS and monitor remain removed.",
+  "description": "Android64 beta.18 experimental AI button/control correction; native and device tests pending. XD TOOLS and monitor remain removed.",
   "settings": {
     "share-after-save": {
       "type": "bool",
@@ -17,8 +17,8 @@
     },
     "ai-record-experimental": {
       "type": "bool",
-      "name": "Experimental AI macro attempt (next level)",
-      "description": "OFF by default. Try bounded single-button classic-level attempts on Android. After a completion, re-enter the same level for a verification replay; a candidate .gdr.json is saved locally only if both runs match. It may fail, and xdBot import is not yet verified. Manual input or disabling this setting cancels AI. No website upload.",
+      "name": "Allow experimental AI via START AI button",
+      "description": "OFF by default. Entering a level never starts AI. Tap START AI in the level, read the warning and confirm to enable and begin; STOP AI, manual input, restart and quitting cancel only the current run without silently changing this preference. Turn this OFF to cancel and disallow AI. Local bounded classic-level timing heuristic only; xdBot replay unverified.",
       "default": false
     }
   },
